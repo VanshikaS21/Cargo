@@ -1,5 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { MapPinIcon, GlobeAltIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
+import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
 
 function HomepageHero() {
   const [formData, setFormData] = useState({
@@ -9,7 +10,15 @@ function HomepageHero() {
     passengers: "",
   });
 
+  const autocompleteFromRef = useRef(null);
+  const autocompleteToRef = useRef(null);
   const dateInputRef = useRef(null);
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: 'AIzaSyDVPppkMKTKJdKzadu1Pd3WunqeKz5eSdY',
+    libraries: ["places"],
+  });
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,40 +50,77 @@ function HomepageHero() {
     }
   };
 
-  // Trigger the date picker when the surrounding div is clicked
+  // Handle date input focus
   const handleDateClick = () => {
     if (dateInputRef.current) {
-      dateInputRef.current.focus(); // Focus the input field to show the date picker
-      dateInputRef.current.click(); // Simulate a click to open the date picker
+      dateInputRef.current.focus();
+      dateInputRef.current.click();
     }
   };
+
+  // Handle place selection for "from" and "to" fields
+  const handlePlaceChanged = useCallback((type) => {
+    if (type === "from" && autocompleteFromRef.current) {
+      const place = autocompleteFromRef.current.getPlace();
+      setFormData({
+        ...formData,
+        from: place.formatted_address || place.name,
+      });
+    }
+    if (type === "to" && autocompleteToRef.current) {
+      const place = autocompleteToRef.current.getPlace();
+      setFormData({
+        ...formData,
+        to: place.formatted_address || place.name,
+      });
+    }
+  }, [formData]);
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="flex flex-col justify-center items-center w-full mt-10">
       <div className="relative w-2/3 mx-auto h-2/3">
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* From Location Field */}
           <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full">
             <MapPinIcon className="h-6 w-6 text-gray-500 mr-3" />
-            <input
-              name="from"
-              value={formData.from}
-              onChange={handleChange}
-              className="w-full bg-gray-100 py-1 px-2 leading-tight focus:outline-none placeholder:text-black text-xl"
-              type="text"
-              placeholder="Travelling from..."
-            />
+            <Autocomplete
+              onLoad={(autocomplete) => (autocompleteFromRef.current = autocomplete)}
+              onPlaceChanged={() => handlePlaceChanged("from")}
+            >
+              <input
+                name="from"
+                value={formData.from}
+                onChange={handleChange}
+                className="w-full bg-gray-100 py-1 px-2 leading-tight focus:outline-none placeholder:text-black text-xl"
+                type="text"
+                placeholder="Travelling from..."
+              />
+            </Autocomplete>
           </div>
+
+          {/* To Location Field */}
           <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full">
             <GlobeAltIcon className="h-6 w-6 text-gray-500 mr-3" />
-            <input
-              name="to"
-              value={formData.to}
-              onChange={handleChange}
-              className="w-full bg-gray-100 py-1 px-2 leading-tight focus:outline-none placeholder:text-black text-xl"
-              type="text"
-              placeholder="Travelling to..."
-            />
+            <Autocomplete
+              onLoad={(autocomplete) => (autocompleteToRef.current = autocomplete)}
+              onPlaceChanged={() => handlePlaceChanged("to")}
+            >
+              <input
+                name="to"
+                value={formData.to}
+                onChange={handleChange}
+                className="w-full bg-gray-100 py-1 px-2 leading-tight focus:outline-none placeholder:text-black text-xl"
+                type="text"
+                placeholder="Travelling to..."
+              />
+            </Autocomplete>
           </div>
+
+          {/* Date Field */}
           <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full" onClick={handleDateClick}>
             <CalendarIcon className="h-6 w-6 text-gray-500 mr-3" />
             <input
@@ -83,10 +129,12 @@ function HomepageHero() {
               value={formData.date}
               onChange={handleChange}
               className="w-full bg-gray-100 py-1 px-2 leading-tight focus:outline-none placeholder:text-black text-xl cursor-pointer"
-              type="date"  // Changed to 'date' to directly open the date picker
+              type="date"
               placeholder="Date you're travelling on"
             />
           </div>
+
+          {/* Passengers Field */}
           <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full">
             <UserIcon className="h-6 w-6 text-gray-500 mr-3" />
             <input
@@ -99,12 +147,14 @@ function HomepageHero() {
               min="1"
             />
           </div>
+
+          {/* Submit Button */}
           <div className="flex justify-center">
             <button
               type="submit"
               className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
             >
-              Submit
+              Search
             </button>
           </div>
         </form>
