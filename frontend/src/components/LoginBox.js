@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import Footer from "./Footer";
 import Navbar from "./UI/Navbar";
 import { BsGoogle } from "react-icons/bs";
-import { CgFacebook } from "react-icons/cg";
-import { FaLinkedinIn } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 import axios from "axios"; // Import axios for making HTTP requests
 import { ToastContainer, toast } from 'react-toastify';
@@ -112,14 +110,7 @@ function LoginBox() {
               <BsGoogle size={24} />
               <h2>Continue with Google</h2>
             </div>
-            <div className="flex font-bold text-center justify-evenly  p-6 lg:gap-x-4 text-gray-800 align-middle transition-all bg-transparent border border-gray-300 border-solid rounded-lg shadow-none cursor-pointer hover:scale-102 leading-pro ease-soft-in tracking-tight-soft  hover:bg-primaryOrange-light hover:text-white hover:cursor-pointer duration-200">
-              <CgFacebook size={24} />
-              <h2>Continue with Facebook</h2>
-            </div>
-            <div className="flex font-bold text-center justify-evenly  p-6 lg:gap-x-4 text-gray-800 align-middle transition-all bg-transparent border border-gray-300 border-solid rounded-lg shadow-none cursor-pointer hover:scale-102 leading-pro ease-soft-in tracking-tight-soft  hover:bg-primaryOrange-light hover:text-white hover:cursor-pointer  duration-200">
-              <FaLinkedinIn size={24} />
-              <h2>Continue with Linkedin</h2>
-            </div>
+
           </div>
           <div className="flex font-bold text-center justify-evenly  text-gray-800 align-middle">
             <h2>OR</h2>

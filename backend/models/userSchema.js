@@ -8,7 +8,7 @@ const userSchema = new Schema({
     email: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     role: { type: String, enum: ['Super User', 'Passenger', 'Driver'],default:'Passenger' },
-    phone: { type: String},
+    phone: { type: Number, default:0},
     age: { type: Number },
     gender: { type: String, enum: ['Male', 'Female', 'Other'] },
     about: { type: String }, 

@@ -136,20 +136,12 @@ function RegisterBox() {
             </div>
           )}
           <div className="p-6 mb-0 text-center bg-white border-b-0 rounded-t-2xl text-gray-800 font-bold">
-            <h5>Register with</h5>
+            <h5>SignUp with</h5>
           </div>
           <div className="flex flex-col lg:flex-row justify-items-center gap-y-4 lg:gap-x-4 lg:justify-around m-4 mt-0">
             <div className="flex font-bold text-center justify-evenly p-6 lg:gap-x-4 text-gray-800 align-middle transition-all bg-transparent border border-gray-300 border-solid rounded-lg shadow-none cursor-pointer hover:scale-102 leading-pro ease-soft-in tracking-tight-soft hover:bg-primaryOrange-light hover:text-white hover:cursor-pointer duration-200">
               <BsGoogle size={24} />
               <h2>Continue with Google</h2>
-            </div>
-            <div className="flex font-bold text-center justify-evenly  p-6 lg:gap-x-4 text-gray-800 align-middle transition-all bg-transparent border border-gray-300 border-solid rounded-lg shadow-none cursor-pointer hover:scale-102 leading-pro ease-soft-in tracking-tight-soft  hover:bg-primaryOrange-light hover:text-white hover:cursor-pointer duration-200">
-              <CgFacebook size={24} />
-              <h2>Continue with Facebook</h2>
-            </div>
-            <div className="flex font-bold text-center justify-evenly  p-6 lg:gap-x-4 text-gray-800 align-middle transition-all bg-transparent border border-gray-300 border-solid rounded-lg shadow-none cursor-pointer hover:scale-102 leading-pro ease-soft-in tracking-tight-soft  hover:bg-primaryOrange-light hover:text-white hover:cursor-pointer  duration-200">
-              <FaLinkedinIn size={24} />
-              <h2>Continue with LinkedIn</h2>
             </div>
           </div>
           <div className="flex font-bold text-center justify-evenly  text-gray-800 align-middle">
@@ -250,7 +242,7 @@ function RegisterBox() {
                   onClick={submitForm}
                   className="inline-block w-full rounded-lg bg-primaryOrange text-white px-6 py-3 font-bold leading-tight uppercase shadow-soft-lg transition-all hover:shadow-xs hover:scale-102 bg-black"
                 >
-                  Register
+                  Sign Up
                 </button>
               </div>
             </form>
