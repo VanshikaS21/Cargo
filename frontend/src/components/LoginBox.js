@@ -5,22 +5,26 @@ import { BsGoogle } from "react-icons/bs";
 import { CgFacebook } from "react-icons/cg";
 import { FaLinkedinIn } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
+import axios from "axios"; // Import axios for making HTTP requests
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function LoginBox() {
-  const [userId, setUserId] = useState("");
+  const [userid, setuserid] = useState("");
   const [password, setPassword] = useState("");
-  const [userIdError, setUserIdError] = useState(false);
+  const [useridError, setuseridError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [errors, setErrors] = useState([]);
 
-  function submitForm() {
+  async function submitForm() {
     setErrors([]);
-    setUserIdError(false);
+    setuseridError(false);
     setPasswordError(false);
     let formErrors = [];
-    if (!userId) {
+
+    if (!userid) {
       formErrors.push("Valid User Id is required");
-      setUserIdError(true);
+      setuseridError(true);
     }
 
     if (!password) {
@@ -28,13 +32,37 @@ function LoginBox() {
       setPasswordError(true);
       setPassword("");
     }
-    setErrors(formErrors);
+
+    if (formErrors.length > 0) {
+      setErrors(formErrors);
+      return; // Exit early if there are validation errors
+    }
+
+    // Clear previous errors
+    setErrors([]);
+
+    try {
+      const response = await axios.post("http://localhost:5000/api/auth/login", {
+        userid,
+        password,
+      });
+
+      // Assuming the API returns a success message or token
+      toast.success("Login successful!"); // Show success message
+      console.log(response.data); // Handle successful response (e.g., save token, redirect, etc.)
+    } catch (error) {
+      // Handle error response
+      if (error.response) {
+        setErrors([error.response.data.message || "Login failed."]);
+      } else {
+        setErrors(["An error occurred. Please try again later."]);
+      }
+      toast.error("Login failed."); // Show error message
+    }
   }
+
   return (
-    <div
-      className="flex flex-col
-    "
-    >
+    <div className="flex flex-col">
       <Navbar />
       <div className="w-full max-w-full mx-auto mt-20 md:mb-20 p-6 lg:w-5/12">
         <div className="relative z-0 flex flex-col justify-center break-words min-w-fit bg-white border-0 shadow-soft-xl rounded-2xl bg-clip-border lg:p-12">
@@ -45,13 +73,11 @@ function LoginBox() {
                 className="flex p-4 m-4 text-red-500 border-2 rounded-md border-red-500 justify-center"
               >
                 <div className="flex flex-col">
-                  {errors.map((err, id) => {
-                    return (
-                      <div className="ml-3 text-sm font-medium" key={id}>
-                        {err}
-                      </div>
-                    );
-                  })}
+                  {errors.map((err, id) => (
+                    <div className="ml-3 text-sm font-medium" key={id}>
+                      {err}
+                    </div>
+                  ))}
                 </div>
 
                 <button
@@ -105,15 +131,15 @@ function LoginBox() {
                   type="text"
                   className={
                     "text-sm focus:shadow-soft-primary-outline leading-5.6 ease-soft block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding py-2 px-3 font-normal text-gray-700 transition-all focus:border-gray-300 focus:bg-white focus:text-gray-700 focus:outline-none focus:transition-shadow " +
-                    (userIdError ? "border-red-500" : "")
+                    (useridError ? "border-red-500" : "")
                   }
                   placeholder="User Id"
-                  name="userId"
+                  name="userid"
                   aria-label="User Id"
-                  autoComplete="userId"
-                  value={userId}
+                  autoComplete="userid"
+                  value={userid}
                   onChange={(e) => {
-                    setUserId(e.target.value);
+                    setuserid(e.target.value);
                   }}
                 />
               </div>
@@ -154,6 +180,7 @@ function LoginBox() {
           </div>
         </div>
       </div>
+      <ToastContainer/>
       <Footer />
     </div>
   );

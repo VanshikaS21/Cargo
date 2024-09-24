@@ -3,49 +3,35 @@ import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import jwt from "jsonwebtoken";
-import poolRoutes from "./routes/poolRoutes.js";
-import { errorHandler } from "./middleware/errorMiddleware.js";
+import authRoute from "./routes/Authentication/SignUp.js";
+// Load environment variables
+dotenv.config();
 
-const app = new express();
+// Database connection
+const db = async () => {
+  try {
+    const URI = process.env.DATABASE;
+    await mongoose.connect(URI);
+    console.log("Connected to MongoDB successfully");
+  } catch (error) {
+    console.log("Error occurred during MongoDB connection:", error);
+  }
+};
 
+// Initialize Express app
+const app = express();
+
+// Connect to MongoDB
+db();
+
+// Middleware
 app.use(bodyParser.json({ limit: "50mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(cors());
-dotenv.config({ path: "../properties/.env" });
 
-const port = process.env.port;
+app.use("/api/auth", authRoute);
 
-// mongoose
-//   .connect(process.env.CONNECTION_URL)
-//   .then(() =>
-//     app.listen(port, () => console.log(`server running on port: ${port}`))
-//   );
+const port = process.env.PORT || 5000;
 
-app.listen(port, () => console.log(`server running on port: ${port}`));
-
-app.use(errorHandler);
-app.use("/api/pools", poolRoutes);
-app.post("/api/login", (req, res) => {
-  //Test user
-
-  const user = {
-    id: 1,
-    username: "ash",
-    email: "ashkechum@pokemon.com",
-    isRememberMe: true,
-  };
-  let expirationTime = user.isRememberMe ? "30d" : "1d";
-
-  jwt.sign(
-    { user },
-    "secretkey",
-    { expiresIn: expirationTime },
-    (err, token) => {
-      //Return Welcome page
-      res.json({
-        token,
-      });
-    }
-  );
-});
+// Start server
+app.listen(port, () => console.log(`Server running on port: ${port}`));

@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import Footer from "./Footer";
 import Navbar from "./UI/Navbar";
-import SearchableDropdown from "./UI/SearchableDropdown";
 import { BsGoogle } from "react-icons/bs";
 import { CgFacebook } from "react-icons/cg";
 import { FaLinkedinIn } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
+import axios from "axios"; // Import axios for making HTTP requests
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 var passwordValidator = require("password-validator");
 
 function RegisterBox() {
@@ -33,25 +36,27 @@ function RegisterBox() {
       );
   };
 
-  const [city, setCity] = useState("");
-  const [userId, setUserId] = useState("");
+  const [name, setName] = useState(""); // Use state for name instead of city
+  const [userid, setuserid] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userIdError, setUserIdError] = useState(false);
+  const [useridError, setuseridError] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [errors, setErrors] = useState([]);
-  const cities = [];
 
   function submitForm() {
     setErrors([]);
-    setUserIdError(false);
+    setuseridError(false);
     setEmailError(false);
     setPasswordError(false);
     let formErrors = [];
-    if (!userId) {
+    if (!userid) {
       formErrors.push("User Id is required");
-      setUserIdError(true);
+      setuseridError(true);
+    }
+    if (!name) {
+      formErrors.push("Name is required");
     }
     if (!email) {
       formErrors.push("Email is required");
@@ -62,23 +67,34 @@ function RegisterBox() {
       setEmailError(true);
     }
     if (!password) {
-      formErrors.push("We can't create your account without password");
+      formErrors.push("We can't create your account without a password");
       setPasswordError(true);
     }
     if (!schema.validate(password)) {
       formErrors.push(
-        "Please choose a more strong password. Make sure your password contains at least 1 Uppercase letter, 1 lowercase letter, 1 digit, and minimum 8 length."
+        "Please choose a stronger password. It must contain at least 1 uppercase letter, 1 lowercase letter, 1 digit, and be at least 8 characters long."
       );
       setPasswordError(true);
       setPassword("");
     }
+    if (formErrors.length === 0) {
+      // Only send the request if there are no errors
+      axios
+        .post("http://localhost:5000/api/auth/signup", { userid, name, email, password })
+        .then((response) => {
+          console.log(response);
+          toast.success("Registration successful!"); // Show success toast
+          // Reset the form fields or redirect user as needed
+        })
+        .catch((error) => {
+          toast.error("Registration failed: " + error.response.data.message); // Show error toast
+        });
+    }
     setErrors(formErrors);
   }
+
   return (
-    <div
-      className="flex flex-col
-    "
-    >
+    <div className="flex flex-col">
       <Navbar />
       <div className="w-full max-w-full mx-auto mt-20 md:mb-20 p-6 lg:w-5/12">
         <div className="relative z-0 flex flex-col justify-center break-words min-w-fit bg-white border-0 shadow-soft-xl rounded-2xl bg-clip-border lg:p-12">
@@ -89,15 +105,12 @@ function RegisterBox() {
                 className="flex p-4 m-4 text-red-500 border-2 rounded-md border-red-500 justify-center"
               >
                 <div className="flex flex-col">
-                  {errors.map((err, id) => {
-                    return (
-                      <div className="ml-3 text-sm font-medium" key={id}>
-                        {err}
-                      </div>
-                    );
-                  })}
+                  {errors.map((err, id) => (
+                    <div className="ml-3 text-sm font-medium" key={id}>
+                      {err}
+                    </div>
+                  ))}
                 </div>
-
                 <button
                   type="button"
                   className="ml-auto text-red-500 rounded-lg inline-flex h-8 w-8 justify-center"
@@ -136,7 +149,7 @@ function RegisterBox() {
             </div>
             <div className="flex font-bold text-center justify-evenly  p-6 lg:gap-x-4 text-gray-800 align-middle transition-all bg-transparent border border-gray-300 border-solid rounded-lg shadow-none cursor-pointer hover:scale-102 leading-pro ease-soft-in tracking-tight-soft  hover:bg-primaryOrange-light hover:text-white hover:cursor-pointer  duration-200">
               <FaLinkedinIn size={24} />
-              <h2>Continue with Linkedin</h2>
+              <h2>Continue with LinkedIn</h2>
             </div>
           </div>
           <div className="flex font-bold text-center justify-evenly  text-gray-800 align-middle">
@@ -150,29 +163,36 @@ function RegisterBox() {
                     type="text"
                     className={
                       "text-sm focus:shadow-soft-primary-outline leading-5.6 ease-soft block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding py-2 px-3 font-normal text-gray-700 transition-all focus:border-gray-300 focus:bg-white focus:text-gray-700 focus:outline-none focus:transition-shadow " +
-                      (userIdError ? "border-red-500" : "")
+                      (useridError ? "border-red-500" : "")
                     }
                     placeholder="User Id"
-                    name="userId"
+                    name="userid"
                     aria-label="User Id"
-                    autoComplete="userId"
-                    value={userId}
+                    autoComplete="userid"
+                    value={userid}
                     onChange={(e) => {
-                      setUserId(e.target.value);
+                      setuserid(e.target.value);
                     }}
                   />
                 </div>
 
-                <SearchableDropdown
-                  searchPlaceholder={"Search City"}
-                  labelColor={"gray-700"}
-                  heading={"Select City"}
-                  options={cities}
-                  selectedValue={city}
-                  setSelectedValue={setCity}
-                />
+                <div className="mb-4 w-2/3">
+                  <input
+                    type="text"
+                    className="text-sm focus:shadow-soft-primary-outline leading-5.6 ease-soft block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding py-2 px-3 font-normal text-gray-700 transition-all focus:border-gray-300 focus:bg-white focus:text-gray-700 focus:outline-none focus:transition-shadow"
+                    placeholder="Name" // Updated placeholder
+                    name="name"
+                    aria-label="Name" // Updated aria-label
+                    autoComplete="name" // Updated autoComplete
+                    value={name}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                    }}
+                  />
+                </div>
               </div>
-              <div className="mb-4">
+
+              <div className="mb-4 w-full">
                 <input
                   type="email"
                   className={
@@ -182,15 +202,15 @@ function RegisterBox() {
                   placeholder="Email"
                   name="email"
                   aria-label="Email"
-                  value={email}
-                  aria-describedby="email-addon"
                   autoComplete="email"
+                  value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
                   }}
                 />
               </div>
-              <div className="mb-4">
+
+              <div className="mb-4 w-full">
                 <input
                   type="password"
                   className={
@@ -198,55 +218,55 @@ function RegisterBox() {
                     (passwordError ? "border-red-500" : "")
                   }
                   placeholder="Password"
+                  name="password"
                   aria-label="Password"
+                  autoComplete="current-password"
                   value={password}
-                  aria-describedby="password-addon"
                   onChange={(e) => {
                     setPassword(e.target.value);
                   }}
                 />
-                <div className="mt-4 text-sm text-primaryOrange-dark">
-                  Please make sure your password contains at least 1 Uppercase
-                  letter, 1 lowercase letter, 1 digit, and minimum 8 length.
+              </div>
+
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <input
+                    id="flexCheckDefault"
+                    type="checkbox"
+                    className="mr-2"
+                  />
+                  <label
+                    className="inline-block text-sm cursor-pointer text-gray-800"
+                    htmlFor="flexCheckDefault"
+                  >
+                    Remember me
+                  </label>
                 </div>
               </div>
-              <div className="min-h-6 pl-7 mb-0.5 block">
-                <input
-                  id="terms"
-                  className="w-5 h-5 ease-soft -ml-7 rounded-1.4 checked:bg-primaryOrange-light   relative float-left mt-1 cursor-pointer appearance-none border border-solid border-slate-800 bg-white bg-contain bg-center bg-no-repeat align-top transition-all after:absolute after:flex after:h-full after:w-full after:items-center after:justify-center after:text-white after:opacity-0 after:transition-all after:content-['\2713'] checked:border-0 checked:border-transparent checked:bg-transparent checked:after:opacity-100"
-                  type="checkbox"
-                  value=""
-                />
-                <label
-                  className="mb-2 ml-1 font-normal select-none text-sm text-slate-700"
-                  htmlFor="terms"
-                >
-                  I agree the with &nbsp;
-                  <a href="#" className="font-bold text-slate-700">
-                    Terms and Conditions
-                  </a>
-                </label>
-              </div>
+
               <div className="text-center">
                 <button
                   type="button"
-                  onClick={() => submitForm()}
-                  className="inline-block w-full px-6 py-3 mt-6 mb-2 font-bold text-center text-white uppercase align-middle transition-all bg-primaryOrange-light border-0 rounded-lg cursor-pointer hover:bg-primaryOrange-dark"
+                  onClick={submitForm}
+                  className="inline-block w-full rounded-lg bg-primaryOrange text-white px-6 py-3 font-bold leading-tight uppercase shadow-soft-lg transition-all hover:shadow-xs hover:scale-102 bg-black"
                 >
-                  Sign up
+                  Register
                 </button>
               </div>
-              <p className="mt-4 mb-0 leading-normal text-sm">
-                Already have an account?
-                <NavLink to="/login" className="font-bold text-slate-700">
-                  Sign in
-                </NavLink>
-              </p>
             </form>
+
+            <div className="mt-6 flex justify-center">
+              <p className="mr-2">Already have an account?</p>
+              <NavLink to="/login" className="text-primaryOrange font-bold">
+                Login
+              </NavLink>
+            </div>
           </div>
         </div>
       </div>
+      <ToastContainer />
       <Footer />
+    
     </div>
   );
 }
