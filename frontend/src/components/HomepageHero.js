@@ -18,7 +18,6 @@ function HomepageHero() {
     googleMapsApiKey: 'AIzaSyDVPppkMKTKJdKzadu1Pd3WunqeKz5eSdY',
     libraries: ["places"],
   });
-  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -81,8 +80,19 @@ function HomepageHero() {
   }
 
   return (
-    <div className="flex flex-col justify-center items-center w-full mt-10">
-      <div className="relative w-2/3 mx-auto h-2/3">
+    <div
+      className="flex flex-col justify-center items-center w-full min-h-screen bg-cover bg-center relative"
+      style={{
+        backgroundImage: `url('/Homebg.png')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Opaque Overlay */}
+      <div className="absolute inset-0 bg-black opacity-30 z-0"></div>
+
+      {/* Form Container with Extended Yellow Section */}
+      <div className="relative w-2/3 mx-auto bg-yellow-150 rounded-md z-10"> {/* Adjusted padding */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* From Location Field */}
           <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full">

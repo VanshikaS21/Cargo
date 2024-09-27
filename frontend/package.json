@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@heroicons/react": "^2.1.5",
+    "@heroicons/react": "^1.0.6",
     "@material-tailwind/react": "^1.4.2",
     "@react-google-maps/api": "^2.19.3",
     "@testing-library/jest-dom": "^5.16.4",
