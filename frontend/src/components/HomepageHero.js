@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from "react";
-import { MapPinIcon, GlobeAltIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
+import { FaMapPin as MapPinIcon, FaGlobe as GlobeAltIcon, FaCalendarAlt as CalendarIcon, FaUser as UserIcon } from 'react-icons/fa';
 import { Autocomplete, useJsApiLoader } from '@react-google-maps/api';
 
 function HomepageHero() {

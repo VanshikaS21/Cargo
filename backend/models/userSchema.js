@@ -7,7 +7,7 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     name: { type: String, required: true },
-    role: { type: String, enum: ['Super User', 'Passenger', 'Driver'],default:'Passenger' },
+    role: { type: String, enum: ['SuperUser', 'Passenger', 'Driver'],default:'Passenger' },
     phone: { type: Number, default:0},
     age: { type: Number },
     gender: { type: String, enum: ['Male', 'Female', 'Other'] },

@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoute from "./routes/Authentication/SignUp.js";
+import userRoute from "./routes/UserData.js"
 // Load environment variables
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 app.use(cors());
 
 app.use("/api/auth", authRoute);
+app.use("/api/user", userRoute);
 
 const port = process.env.PORT || 5000;
 

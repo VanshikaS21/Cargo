@@ -99,20 +99,23 @@ router.post(
                 let roleSpecificData;
 
                 // Handle different roles
-                if (user.role === 'Super User') {
+                if (user.role === 'SuperUser') {
                     roleSpecificData = {
                         id: user._id,
-                        role: 'Super User',
+                        role: 'SuperUser',
+                        name:user.name
                     };
                 } else if (user.role === 'Driver') {
                     roleSpecificData = {
                         id: user._id,
                         role: 'Driver',
+                        name: user.name
                     };
                 } else {
                     roleSpecificData = {
                         id: user._id,
                         role: 'Passenger',
+                        name: user.name
                     };
                 }
 

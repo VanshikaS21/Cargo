@@ -6,6 +6,8 @@ import { NavLink } from "react-router-dom";
 import axios from "axios"; // Import axios for making HTTP requests
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
+import { getUserRole } from "../utils/AuthFunctions";
 
 function LoginBox() {
   const [userid, setuserid] = useState("");
@@ -13,6 +15,7 @@ function LoginBox() {
   const [useridError, setuseridError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const [errors, setErrors] = useState([]);
+  const navigate=useNavigate()
 
   async function submitForm() {
     setErrors([]);
@@ -46,8 +49,22 @@ function LoginBox() {
       });
 
       // Assuming the API returns a success message or token
-      toast.success("Login successful!"); // Show success message
-      console.log(response.data); // Handle successful response (e.g., save token, redirect, etc.)
+      if(response.data.success){
+        toast.success("Login successful!"); // Show success message
+
+        localStorage.setItem("authToken", response.data.authToken);
+        const role = getUserRole();
+        console.log(role)
+        if (role === 'SuperUser') {
+          navigate('/superuser')
+        }else{
+          console.log("hello")
+         navigate('/')
+        }
+      }else{
+        toast.error(response.data.success); // Show error message
+      }
+      
     } catch (error) {
       // Handle error response
       if (error.response) {

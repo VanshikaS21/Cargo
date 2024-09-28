@@ -1,16 +1,79 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom'; // Assuming you're using react-router for navigation.
 import Logo from '../components/UI/logo';
+import axios from 'axios';
+import { getUserId } from '../utils/AuthFunctions';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Profile = () => {
-  const [profileImage, setProfileImage] = useState(null);
+  const [formData, setFormData] = useState({
+    userid:'',
+    age:'',
+    name:'',
+    email:'',
+    phone:'',
+    profileImage: null,
+    role: '',
+    licenseNumber: '',
+    licensePhotograph: null,
+    faceIDPhoto: null,
+    vehicleName: '',
+    registrationNumber: '',
+    registrationCertificate: null,
+    insuranceDocument: null,
+    pucCertificate: null,
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const dropdownRef = useRef(null); // Create a ref for the dropdown menu
+  const fetchData = async () => {
+    try {
+      const id = getUserId()
+      const token = localStorage.getItem('authToken')
+      const response = await axios.get(`http://localhost:5000/api/user/${id}`, {
+        headers: {
+          'auth-token': token,
+        },
+      });
+      const data = response.data.data;
 
+      if (response.data.success) {
+        setFormData(data);
+
+      }
+
+      // Assuming the data is structured to directly map to formData
+
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      alert('An error occurred while fetching the profile data.');
+    }
+  };
+  useEffect(() => {
+   
+
+    fetchData();
+  }, []);
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
-      setProfileImage(URL.createObjectURL(file));
+      setFormData((prev) => ({ ...prev, profileImage: URL.createObjectURL(file) }));
+    }
+  };
+
+  const handleFileUpload = (event, field) => {
+    const file = event.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, [field]: URL.createObjectURL(file) }));
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    if (files) {
+      setFormData((prev) => ({ ...prev, [name]: files[0] }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -32,67 +95,34 @@ const Profile = () => {
     };
   }, []);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+ 
+    // Make POST request
+    try {
+      const id = getUserId()
+      const token = localStorage.getItem('authToken')
+      const response = await axios.put(`http://localhost:5000/api/user/${id}`,{data:formData}, {
+        headers: {
+          'auth-token': token,
+        },
+      });
+
+      if (response.data.success) {
+        // Handle successful response
+        toast.success('Profile saved successfully!');
+      } else {
+        // Handle error response
+        toast.error('Failed to save profile.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An error occurred while saving the profile.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-primaryColor shadow-md py-4 px-6 flex justify-between items-center">
-        <div className="flex items-center">
-          <Logo />
-          <h1 className="ml-3 text-2xl font-bold text-black">CarGo</h1>
-        </div>
-        <div className="relative">
-          <button onClick={toggleMenu} className="flex items-center focus:outline-none">
-            {profileImage ? (
-              <img
-                src={profileImage}
-                alt="Profile"
-                className="w-10 h-10 rounded-full object-cover"
-              />
-            ) : (
-              <svg
-                className="w-10 h-10 text-black"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12 12a4 4 0 100-8 4 4 0 000 8zm-1 9a7 7 0 0114 0h-2a5 5 0 00-10 0h-2a7 7 0 0114 0h-2a5 5 0 00-10 0H3a9 9 0 0118 0h2a7 7 0 00-14 0h2z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-          </button>
-
-           {/* Dropdown Menu */}
-           {menuOpen && (
-            <div
-              ref={dropdownRef} // Reference to dropdown
-              className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1"
-            >
-              <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                Profile
-              </Link>
-              <Link to="/rides" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                Your Rides
-              </Link>
-              <Link to="/payments" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                Payments
-              </Link>
-              <Link to="/help" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                Help
-              </Link>
-              <Link to="/home" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                Home
-              </Link>
-              <button className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                Log Out
-              </button>
-            </div>
-          )}
-        </div>
-      </header>
-
       {/* Profile Section */}
       <div className="flex justify-center py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
@@ -101,194 +131,268 @@ const Profile = () => {
             <p className="mt-2 text-sm text-gray-600">Manage your account settings</p>
           </div>
 
-          {/* Profile Image Upload Section */}
-          <div className="mt-6 flex flex-col items-center">
-            <div className="relative w-32 h-32">
-              {profileImage ? (
-                <img
-                  src={profileImage}
-                  alt="Profile"
-                  className="rounded-full h-full w-full object-cover"
-                />
-              ) : (
-                <svg
-                  className="text-gray-300 w-full h-full rounded-full"
-                  fill="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12 12a4 4 0 100-8 4 4 0 000 8zm-1 9a7 7 0 0114 0h-2a5 5 0 00-10 0h-2a7 7 0 0114 0h-2a5 5 0 00-10 0H3a9 9 0 0118 0h2a7 7 0 00-14 0h2z"
-                    clipRule="evenodd"
+          <form onSubmit={handleSubmit}> {/* Add form element */}
+            {/* Profile Image Upload Section */}
+            <div className="mt-6 flex flex-col items-center">
+              <div className="relative w-32 h-32">
+                {formData.profileImage ? (
+                  <img
+                    src={formData.profileImage}
+                    alt="Profile"
+                    className="rounded-full h-full w-full object-cover"
                   />
-                </svg>
-              )}
-              <label
-                htmlFor="profileImageUpload"
-                className="absolute bottom-0 right-0 bg-primaryColor text-white p-2 rounded-full cursor-pointer"
+                ) : (
+                  <svg
+                    className="text-gray-300 w-full h-full rounded-full"
+                    fill="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12 12a4 4 0 100-8 4 4 0 000 8zm-1 9a7 7 0 0114 0h-2a5 5 0 00-10 0h-2a7 7 0 0114 0h-2a5 5 0 00-10 0H3a9 9 0 0118 0h2a7 7 0 00-14 0h2z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+                <label
+                  htmlFor="profileImageUpload"
+                  className="absolute bottom-0 right-0 bg-primaryColor text-white p-2 rounded-full cursor-pointer"
+                >
+                  <input
+                    id="profileImageUpload"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                  />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15.232 5.232l3.536 3.536M9 10.5a2.5 2.5 0 115 0m7 7v4a1 1 0 01-1 1h-4m4-9.5a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"
+                    />
+                  </svg>
+                </label>
+              </div>
+            </div>
+
+            {/* Personal Details Section */}
+            <div className="mt-8 space-y-4">
+              <h3 className="text-xl font-bold text-gray-700">Personal Details</h3>
+              <div className="space-y-4">
+                {/* User ID */}
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">User ID</label>
+                  <input
+                    type="text"
+                    name="userId"
+                    className="p-3 border border-gray-300 rounded-md"
+                    placeholder="Enter your User ID"
+                    value={formData.userid}
+                    onChange={handleChange}
+                  />
+                </div>
+
+               
+
+                {/* Name */}
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    className="p-3 border border-gray-300 rounded-md"
+                    placeholder="Enter your name"
+                    value={formData.name}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Age */}
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">Age</label>
+                  <input
+                    type="number"
+                    name="age"
+                    className="p-3 border border-gray-300 rounded-md"
+                    placeholder="Enter your age"
+                    value={formData.age}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">Email</label>
+                  <input
+                    type="text"
+                    name="email"
+                    className="p-3 border border-gray-300 rounded-md"
+                    placeholder="Enter your email"
+                    value={formData.email}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Gender */}
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">Gender</label>
+                  <select
+                    name="gender"
+                    className="p-3 border border-gray-300 rounded-md"
+                    value={formData.gender}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select your gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+
+                {/* Phone */}
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">Phone</label>
+                  <input
+                    type="tel"
+                    name="phone"
+                    className="p-3 border border-gray-300 rounded-md"
+                    placeholder="Enter your phone number"
+                    value={formData.phone}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* License Number */}
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">License Number</label>
+                  <input
+                    type="text"
+                    name="licenseNumber"
+                    className="p-3 border border-gray-300 rounded-md"
+                    placeholder="Enter your license number"
+                    value={formData.licenseNumber}
+                    onChange={handleChange}
+                  />
+                </div>
+                {
+                  formData.role === "Driver" ? <div className="flex flex-col">
+                    <label className="text-gray-600 font-medium">License Photograph</label>
+                    <input
+                      type="file"
+                      name="licensePhotograph"
+                      className="p-3 border border-gray-300 rounded-md"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, 'licensePhotograph')}
+                    />
+                  </div> : null
+                }
+                {/* License Photograph */}
+             
+
+                {/* Face ID Photo */}
+                {formData.faceIDPhoto?
+                  <div className="flex flex-col">
+                    <label className="text-gray-600 font-medium">Face ID Photo</label>
+                    Already uploaded
+                  </div> 
+                  :
+                  <div className="flex flex-col">
+                    <label className="text-gray-600 font-medium">Face ID Photo</label>
+                    <input
+                      type="file"
+                      name="faceIDPhoto"
+                      className="p-3 border border-gray-300 rounded-md"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, 'faceIDPhoto')}
+                    />
+                  </div>
+                }
+               
+
+                {/* Vehicle Name */}
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">Vehicle Name</label>
+                  <input
+                    type="text"
+                    name="vehicleName"
+                    className="p-3 border border-gray-300 rounded-md"
+                    placeholder="Enter your vehicle name"
+                    value={formData.vehicleName}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Registration Number */}
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">Registration Number</label>
+                  <input
+                    type="text"
+                    name="registrationNumber"
+                    className="p-3 border border-gray-300 rounded-md"
+                    placeholder="Enter your registration number"
+                    value={formData.registrationNumber}
+                    onChange={handleChange}
+                  />
+                </div>
+
+                {/* Registration Certificate */}
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">Registration Certificate</label>
+                  <input
+                    type="file"
+                    name="registrationCertificate"
+                    className="p-3 border border-gray-300 rounded-md"
+                    accept="application/pdf"
+                    onChange={(e) => handleFileUpload(e, 'registrationCertificate')}
+                  />
+                </div>
+
+                {/* Insurance Document */}
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">Insurance Document</label>
+                  <input
+                    type="file"
+                    name="insuranceDocument"
+                    className="p-3 border border-gray-300 rounded-md"
+                    accept="application/pdf"
+                    onChange={(e) => handleFileUpload(e, 'insuranceDocument')}
+                  />
+                </div>
+
+                {/* PUC Certificate */}
+                <div className="flex flex-col">
+                  <label className="text-gray-600 font-medium">PUC Certificate</label>
+                  <input
+                    type="file"
+                    name="pucCertificate"
+                    className="p-3 border border-gray-300 rounded-md"
+                    accept="application/pdf"
+                    onChange={(e) => handleFileUpload(e, 'pucCertificate')}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={handleSubmit}
+                className="bg-primaryColor text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-blue-700"
               >
-                <input
-                  id="profileImageUpload"
-                  type="file"
-                  className="hidden"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  strokeWidth="2"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15.232 5.232l3.536 3.536M9 10.5a2.5 2.5 0 115 0m7 7v4a1 1 0 01-1 1h-4m4-9.5a7.5 7.5 0 11-15 0 7.5 7.5 0 0115 0z"
-                  />
-                </svg>
-              </label>
+                Save Profile
+              </button>
             </div>
-          </div>
-
-          {/* Personal Details Section */}
-          <div className="mt-8 space-y-4">
-            <h3 className="text-xl font-bold text-gray-700">Personal Details</h3>
-            <div className="space-y-4">
-              <div className="flex flex-col">
-                <label className="text-gray-600 font-medium">Name</label>
-                <input
-                  type="text"
-                  className="p-3 border border-gray-300 rounded-md"
-                  placeholder="Enter your name"
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="text-gray-600 font-medium">Age</label>
-                <input
-                  type="number"
-                  className="p-3 border border-gray-300 rounded-md"
-                  placeholder="Enter your age"
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="text-gray-600 font-medium">Gender</label>
-                <select className="p-3 border border-gray-300 rounded-md">
-                  <option value="">Select your gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div className="flex flex-col">
-                <label className="text-gray-600 font-medium">D.O.B</label>
-                <input
-                  type="date"
-                  className="p-3 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div className="flex flex-col">
-                <label className="text-gray-600 font-medium">Email</label>
-                <input
-                  type="email"
-                  className="p-3 border border-gray-300 rounded-md"
-                  placeholder="Enter your email"
-                />
-              </div>
-            </div>
-          </div>
-{/* Verify Profile Section */}
-<div className="mt-8 space-y-4">
-  <h3 className="text-xl font-bold text-gray-700">Verify Your Profile</h3>
-  <div className="space-y-2">
-    <div className="flex items-center">
-      {/* Updated Icon */}
-      <svg
-        className="w-6 h-6 text-orange-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-      >
-        <circle cx="12" cy="12" r="10" className="stroke-current" />
-        <line x1="12" y1="8" x2="12" y2="16" className="stroke-current" />
-        <line x1="8" y1="12" x2="16" y2="12" className="stroke-current" />
-      </svg>
-      <button
-        className="ml-4 text-orange-600"
-        onClick={() => document.getElementById('govtIdUpload').click()}
-      >
-        Verify your Govt. ID
-      </button>
-      <input
-        id="govtIdUpload"
-        type="file"
-        className="hidden"
-      />
-    </div>
-    <div className="flex items-center">
-      {/* Updated Icon */}
-      <svg
-        className="w-6 h-6 text-orange-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-      >
-        <circle cx="12" cy="12" r="10" className="stroke-current" />
-        <line x1="12" y1="8" x2="12" y2="16" className="stroke-current" />
-        <line x1="8" y1="12" x2="16" y2="12" className="stroke-current" />
-      </svg>
-      <button className="ml-4 text-orange-600">Confirm email</button>
-    </div>
-    <div className="flex items-center">
-      {/* Updated Icon */}
-      <svg
-        className="w-6 h-6 text-orange-600"
-        fill="none"
-        stroke="currentColor"
-        viewBox="0 0 24 24"
-        strokeWidth="2"
-      >
-        <circle cx="12" cy="12" r="10" className="stroke-current" />
-        <line x1="12" y1="8" x2="12" y2="16" className="stroke-current" />
-        <line x1="8" y1="12" x2="16" y2="12" className="stroke-current" />
-      </svg>
-      <button className="ml-4 text-orange-600">Confirm phone number</button>
-    </div>
-  </div>
-</div>
-
-
-
-          {/* Add Vehicle Section */}
-          <div className="mt-8 space-y-4">
-            <h3 className="text-xl font-bold text-gray-700">Add Vehicle</h3>
-            <p className="text-gray-600">Add your vehicle details for carpooling</p>
-            <button className="bg-orange-600 text-white px-4 py-2 rounded-md">Add Vehicle</button>
-          </div>
-
-          {/* About You Section */}
-          <div className="mt-8 space-y-4">
-            <h3 className="text-xl font-bold text-gray-700">About You</h3>
-            <p className="text-gray-600">Tell us more about yourself</p>
-            <textarea
-              className="w-full p-3 border border-gray-300 rounded-md"
-              placeholder="Describe yourself here..."
-            ></textarea>
-          </div>
-    
-
-          {/* Save Button */}
-          <div className="text-right">
-            <button className="py-3 px-6 bg-primaryColor text-white font-semibold rounded-md hover:bg-primaryHover">
-              Save Changes
-            </button>
-          </div>
+          </form>
         </div>
       </div>
+      <ToastContainer/>
     </div>
   );
 };

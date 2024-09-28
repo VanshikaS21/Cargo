@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import Logo from "../UI/logo"; // Make sure to adjust the path according to your project structure
-
+import { getUserName } from "../../utils/AuthFunctions";
 function Navbar() {
   const [isToggle, setIsToggle] = useState(true);
-
+  const name=getUserName()
+  console.log(name)
   return (
     <nav className="bg-gray-50 border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -37,8 +38,17 @@ function Navbar() {
               </svg>
             </button>
           </div>
+          
           <div className="hidden sm:ml-6 sm:flex sm:items-center gap-2">
-            <NavLink
+          {name?
+              <NavLink
+                to="/profile"
+                className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
+              >
+                {name}
+              </NavLink> :
+              <>
+              <NavLink
               to="/login"
               className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
             >
@@ -50,6 +60,9 @@ function Navbar() {
             >
               Signup
             </NavLink>
+</>
+          }
+          
           </div>
         </div>
       </div>

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import Logo from '../components/UI/logo'; // Adjust the import path as needed
+import { useNavigate } from 'react-router-dom';
 
 const SuperUser = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState([]);
+  const navigate=useNavigate()
   const [drivers, setDrivers] = useState([
     {
       id: 'DR001',
@@ -22,7 +24,12 @@ const SuperUser = () => {
       status: 'Approved',
     },
   ]);
-
+  const handleLogout=()=>{
+    console.log("logout")
+    navigate('/login')
+    localStorage.removeItem('token');
+  
+  }
   const handleSearch = () => {
     // Logic for fetching search results goes here
     console.log('Search term:', searchTerm);
@@ -77,7 +84,7 @@ const SuperUser = () => {
               <a href="#">Search Rides</a>
             </li>
             <li>
-              <button className="bg-primaryOrange-light hover:bg-primaryOrange text-white font-semibold py-2 px-4 rounded">
+              <button className="bg-primaryOrange-light hover:bg-primaryOrange text-white font-semibold py-2 px-4 rounded" onClick={handleLogout}>
                 Logout
               </button>
             </li>
