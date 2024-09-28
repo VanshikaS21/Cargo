@@ -3,6 +3,7 @@
     "@heroicons/react": "^2.1.5",
     "@react-google-maps/api": "^2.19.3",
     "dotenv": "^16.4.5",
+    "jwt-decode": "^4.0.0",
     "react-native": "^0.75.3",
     "react-native-dotenv": "^3.4.11",
     "react-native-google-places-autocomplete": "^2.5.6"

@@ -41,16 +41,12 @@ const Profile = () => {
         setFormData(data);
 
       }
-
-      // Assuming the data is structured to directly map to formData
-
     } catch (error) {
       console.error('Error fetching data:', error);
       alert('An error occurred while fetching the profile data.');
     }
   };
   useEffect(() => {
-   
 
     fetchData();
   }, []);
@@ -67,7 +63,28 @@ const Profile = () => {
       setFormData((prev) => ({ ...prev, [field]: URL.createObjectURL(file) }));
     }
   };
+  const handleRoleToggle = async () => {
+    const newRole = formData.role === 'Driver' ? 'Passenger' : 'Driver';
 
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      role: newRole,
+    }));
+
+    try {
+      const response = await axios.post('/api/updateRole', {
+        role: newRole, 
+      });
+
+      if (response.status === 200) {
+        console.log('Role updated successfully:', response.data);
+      } else {
+        console.error('Failed to update role:', response.status);
+      }
+    } catch (error) {
+      console.error('Error updating role:', error);
+    }
+  };
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     if (files) {
@@ -268,10 +285,62 @@ const Profile = () => {
                     onChange={handleChange}
                   />
                 </div>
+                {/* Toggle Button for Role */}
+                <div className="flex flex-col mt-4">
+  <label className="text-gray-600 font-medium mb-2">Role</label>
+  <div className="flex items-center space-x-3">
+    <span className="text-gray-600 font-medium">Passenger</span>
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        className="sr-only peer"
+        checked={formData.role === 'Driver'}
+        onChange={handleRoleToggle}
+      />
+      <div className="w-11 h-6 bg-orange-500 peer-focus:outline-none  rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+    </label>
+    <span className="text-gray-600 font-medium">Driver</span>
+  </div>
+</div>
 
+
+                {
+                  formData.role === "Driver" ? <div>
+                {/* Face ID Photo */}
+                    <label className="text-gray-600 font-medium">Face ID Photo</label>
+                {formData.faceIDPhoto ?
+                <div className="flex flex-col">
+                    <div className="text-gray-500 font-normal p-1">Already Uploaded</div> 
+                      </div>
+                  :<input
+                      type="file"
+                      name="faceIDPhoto"
+                      className="p-3 border border-gray-300 rounded-md"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, 'faceIDPhoto')}
+                    />
+                }
+                {/* License Photograph */}
+                {formData.licensePhotograph?
+                  <div className="flex flex-col">
+                    <label className="text-gray-600 font-medium p-2">License Photograph</label>
+                    <div className="text-gray-500 font-normal p-1">Already Uploaded
+                      </div>
+                  </div> 
+                  :
+                  <div  className="flex flex-col">
+                  <input
+                  type="file"
+                  name="licensePhotograph"
+                  className="p-3 border border-gray-300 rounded-md"
+                  accept="image/*"
+                  onChange={(e) => handleFileUpload(e, 'licensePhotograph')}
+                />
+                  </div>
+                }
                 {/* License Number */}
                 <div className="flex flex-col">
-                  <label className="text-gray-600 font-medium">License Number</label>
+                  <label className="text-gray-600 font-medium p-2">License Number</label>
                   <input
                     type="text"
                     name="licenseNumber"
@@ -281,44 +350,12 @@ const Profile = () => {
                     onChange={handleChange}
                   />
                 </div>
-                {
-                  formData.role === "Driver" ? <div className="flex flex-col">
-                    <label className="text-gray-600 font-medium">License Photograph</label>
-                    <input
-                      type="file"
-                      name="licensePhotograph"
-                      className="p-3 border border-gray-300 rounded-md"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e, 'licensePhotograph')}
-                    />
-                  </div> : null
-                }
-                {/* License Photograph */}
-             
-
-                {/* Face ID Photo */}
-                {formData.faceIDPhoto?
-                  <div className="flex flex-col">
-                    <label className="text-gray-600 font-medium">Face ID Photo</label>
-                    Already uploaded
-                  </div> 
-                  :
-                  <div className="flex flex-col">
-                    <label className="text-gray-600 font-medium">Face ID Photo</label>
-                    <input
-                      type="file"
-                      name="faceIDPhoto"
-                      className="p-3 border border-gray-300 rounded-md"
-                      accept="image/*"
-                      onChange={(e) => handleFileUpload(e, 'faceIDPhoto')}
-                    />
-                  </div>
-                }
-               
 
                 {/* Vehicle Name */}
                 <div className="flex flex-col">
-                  <label className="text-gray-600 font-medium">Vehicle Name</label>
+                  <label className="text-gray-600 font-medium p-2">Vehicle Name</label>
+
+                  <div  className="flex flex-col">
                   <input
                     type="text"
                     name="vehicleName"
@@ -327,36 +364,57 @@ const Profile = () => {
                     value={formData.vehicleName}
                     onChange={handleChange}
                   />
+                  </div>
                 </div>
 
                 {/* Registration Number */}
                 <div className="flex flex-col">
-                  <label className="text-gray-600 font-medium">Registration Number</label>
-                  <input
+                  <label className="text-gray-600 font-medium p-2">Registration Number</label>
+
+                    <input
                     type="text"
                     name="registrationNumber"
                     className="p-3 border border-gray-300 rounded-md"
-                    placeholder="Enter your registration number"
+                    placeholder="Enter your Registration Number"
                     value={formData.registrationNumber}
                     onChange={handleChange}
                   />
+
                 </div>
 
                 {/* Registration Certificate */}
                 <div className="flex flex-col">
-                  <label className="text-gray-600 font-medium">Registration Certificate</label>
-                  <input
-                    type="file"
-                    name="registrationCertificate"
-                    className="p-3 border border-gray-300 rounded-md"
-                    accept="application/pdf"
-                    onChange={(e) => handleFileUpload(e, 'registrationCertificate')}
-                  />
+                <label className="text-gray-600 font-medium p-2">Registration Certificate</label>
                 </div>
+                {formData.registrationCertificate?
+                  <div className="flex flex-col">
+                    <div className="text-gray-500 font-normal p-1">Already Uploaded
+                      </div>
+                  </div> 
+                  :
+                  <div  className="flex flex-col">
+                  <input
+                  type="file"
+                  name="registrationCertificate"
+                  className="p-3 border border-gray-300 rounded-md"
+                  accept="application/pdf"
+                  onChange={(e) => handleFileUpload(e, 'registrationCertificate')}
+                />
+                  </div>
+                }
+
 
                 {/* Insurance Document */}
                 <div className="flex flex-col">
-                  <label className="text-gray-600 font-medium">Insurance Document</label>
+                <label className="text-gray-600 font-medium p-2">Insurance Document</label>
+                </div>
+                {formData.insuranceDocument?
+                  <div className="flex flex-col">
+                  <div className="text-gray-500 font-normal p-1">Already Uploaded
+                      </div>
+                  </div> 
+                  :
+                  <div  className="flex flex-col">
                   <input
                     type="file"
                     name="insuranceDocument"
@@ -366,17 +424,29 @@ const Profile = () => {
                   />
                 </div>
 
+                }
+
                 {/* PUC Certificate */}
                 <div className="flex flex-col">
-                  <label className="text-gray-600 font-medium">PUC Certificate</label>
-                  <input
+                <label className="text-gray-600 font-medium p-2">PUC Certificate</label>
+                </div>
+                {formData.pucCertificate?
+                  <div className="flex flex-col">
+                  <div className="text-gray-500 font-normal p-1">Already Uploaded
+                      </div>
+                  </div> 
+                  :
+                  <div  className="flex flex-col">
+                    <input
                     type="file"
                     name="pucCertificate"
                     className="p-3 border border-gray-300 rounded-md"
                     accept="application/pdf"
                     onChange={(e) => handleFileUpload(e, 'pucCertificate')}
                   />
-                </div>
+                  </div>
+                }
+                </div>:null}
               </div>
             </div>
 
@@ -384,7 +454,7 @@ const Profile = () => {
             <div className="flex justify-center mt-8">
               <button
                 onClick={handleSubmit}
-                className="bg-primaryColor text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-blue-700"
+                className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-md shadow-md hover:bg-blue-900"
               >
                 Save Profile
               </button>

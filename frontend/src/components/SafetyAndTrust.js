@@ -3,7 +3,7 @@ import { FaUserCheck, FaLock, FaHeadset } from 'react-icons/fa'; // Importing ic
 
 function SafetyAndTrust() {
   return (
-    <section className="bg-yellow-200 py-16">
+    <section className="bg-yellow-100 py-16">
       <div className="container mx-auto px-6">
         <h2 className="text-4xl font-extrabold mb-12 text-center">Your Safety & Trust is Our Priority</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">

@@ -58,7 +58,7 @@ const SuperUser = () => {
   };
 
   return (
-    <div className="p-8 bg-yellow-200 min-h-screen">
+    <div className="p-8 bg-yellow-100 min-h-screen">
       {/* Header */}
       <header className="flex justify-between items-center py-6 px-8 bg-white shadow-md">
         {/* CarGo Logo */}

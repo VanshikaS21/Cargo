@@ -13,8 +13,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 const App = () => {
   return (
     <Router>
-      <div className="App bg-yellow-200">
-        <Routes>
+<div className="App bg-yellow-100 w-full h-screen" >
+            <Routes>
           <Route path="/" element={<Homepage />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
