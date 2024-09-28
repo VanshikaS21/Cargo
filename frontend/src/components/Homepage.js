@@ -1,7 +1,6 @@
 import React from "react";
 import Footer from "./Footer";
 import HomepageHero from "./HomepageHero";
-import HomepagePools from "./HomepagePools";
 import PopularPools from "./PopularPools";
 import HowItWorks from "./HowItWorks";
 import SafetyAndTrust from "./SafetyAndTrust";
@@ -14,10 +13,7 @@ function Homepage() {
     <>
       <Navbar />
       <HomepageHero />
-      <HomepagePools />
-      {/* Include Service Cards section here */}
       <ServiceCards />
-      {/* Include new sections below */}
       <PopularPools />
       <HowItWorks />
       <SafetyAndTrust />
