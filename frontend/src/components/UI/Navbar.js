@@ -1,11 +1,17 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../UI/logo"; // Make sure to adjust the path according to your project structure
 import { getUserName } from "../../utils/AuthFunctions";
+
 function Navbar() {
   const [isToggle, setIsToggle] = useState(true);
-  const name=getUserName()
-  console.log(name)
+  const navigate = useNavigate()
+  const handleLogout = () => {
+    navigate('/login')
+    localStorage.removeItem('token');
+
+  }
+  const name = getUserName()
   return (
     <nav className="bg-gray-50 border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -38,41 +44,44 @@ function Navbar() {
               </svg>
             </button>
           </div>
-          
+
           <div className="hidden sm:ml-6 sm:flex sm:items-center gap-2">
-          {name?
-              <NavLink
-                to="/profile"
-                className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
-              >
-                {name}
-              </NavLink> :
+            {name ?
               <>
-              <NavLink
-              to="/login"
-              className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
-            >
-              Login
-            </NavLink>
-            <NavLink
-              to="/register"
-              className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
-            >
-              Signup
-            </NavLink>
-</>
-          }
-          
+                <NavLink
+                  to="/profile"
+                  className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
+                >
+                  {name}
+                </NavLink>
+                <button
+                  onClick={handleLogout}
+                  className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
+                >
+                  Logout
+                </button>
+              </> :
+              <>
+                <NavLink
+                  to="/login"
+                  className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
+                >
+                  Login
+                </NavLink>
+                <NavLink
+                  to="/register"
+                  className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
+                >
+                  Signup
+                </NavLink>
+              </>
+            }
+
           </div>
         </div>
       </div>
       <div id="menu" className={"sm:hidden " + (isToggle ? "hidden" : null)}>
-        <NavLink
-          to="/support"
-          className="block px-4 py-2 text-primaryBg hover:bg-primaryOrange-dark focus:bg-primaryOrange-dark  hover:text-white focus:text-white"
-        >
-          Support
-        </NavLink>
+
         <NavLink
           to="/login"
           className="block px-4 py-2 text-primaryBg hover:bg-primaryOrange-dark focus:bg-primaryOrange-dark  hover:text-white focus:text-white"

@@ -1,38 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import Logo from '../components/UI/logo'; // Adjust the import path as needed
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
+import { getUserId } from '../utils/AuthFunctions';
 
+import { openBase64NewTab } from '../utils/base64certificate';
+import { REACT_APP_BACKEND_URL } from '../utils/constants';
 const SuperUser = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [results, setResults] = useState([]);
   const navigate=useNavigate()
   const [drivers, setDrivers] = useState([
-    {
-      id: 'DR001',
-      name: 'John Doe',
-      licenseNo: 'DL123456789',
-      licenseDoc: '#',
-      carRegDoc: '#',
-      status: 'Pending',
-    },
-    {
-      id: 'DR002',
-      name: 'Jane Smith',
-      licenseNo: 'DL987654321',
-      licenseDoc: '#',
-      carRegDoc: '#',
-      status: 'Approved',
-    },
   ]);
   const handleLogout=()=>{
-    console.log("logout")
     navigate('/login')
     localStorage.removeItem('token');
   
   }
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem('authToken')
+      const response = await axios.get(`${REACT_APP_BACKEND_URL}/user/`, {
+        headers: {
+          'auth-token': token,
+        },
+      });
+      if (response.data.success) {
+        const filteredDrivers = response.data.data.filter(driver => driver.role === 'Driver');
+        setDrivers(filteredDrivers);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  useEffect(() => {
+
+    fetchData();
+  }, []);
+
+
+  const handleViewCertificate = (certificate) => {
+    if (certificate) {
+      openBase64NewTab(certificate);
+    }
+      else{
+        toast.error('No certificate found');
+      }
+  };
+
+
   const handleSearch = () => {
-    // Logic for fetching search results goes here
-    console.log('Search term:', searchTerm);
     // Dummy results
     setResults([
       { type: 'User', id: 'USR001', name: 'John Doe' },
@@ -41,21 +60,32 @@ const SuperUser = () => {
     ]);
   };
 
-  const handleApprove = (id) => {
-    setDrivers(
-      drivers.map(driver =>
-        driver.id === id ? { ...driver, status: 'Approved' } : driver
-      )
-    );
+  const handleApprove = async (id, status) => {
+    console.log(id)
+    const token = localStorage.getItem('authToken');
+    try {
+      const response = await axios.put(`${REACT_APP_BACKEND_URL}/user/verify/${id}`, { status:status }, {
+        headers: {
+          'auth-token': token,
+        },
+      });
+
+      if (response.data.success) {
+        if(status){
+          toast.success("Driver Approved")
+        }else{
+          toast.success("Driver Rejected")
+        }
+       
+      }
+    } catch (error) {
+      console.error('Error approving driver:', error);
+    }
   };
 
-  const handleReject = (id) => {
-    setDrivers(
-      drivers.map(driver =>
-        driver.id === id ? { ...driver, status: 'Rejected' } : driver
-      )
-    );
-  };
+
+  
+
 
   return (
     <div className="p-8 bg-yellow-100 min-h-screen">
@@ -115,7 +145,6 @@ const SuperUser = () => {
         <table className="w-full bg-white rounded-lg shadow-md">
           <thead className="bg-gray-100">
             <tr>
-              <th className="py-3 px-6">Driver ID</th>
               <th className="py-3 px-6">Name</th>
               <th className="py-3 px-6">License No.</th>
               <th className="py-3 px-6">License Document</th>
@@ -126,27 +155,29 @@ const SuperUser = () => {
           </thead>
           <tbody>
             {drivers.map((driver) => (
-              <tr key={driver.id} className="border-b">
-                <td className="py-3 px-6">{driver.id}</td>
+              <tr key={driver.id} className="border-b text-center">
                 <td className="py-3 px-6">{driver.name}</td>
-                <td className="py-3 px-6">{driver.licenseNo}</td>
+                <td className="py-3 px-6">{driver.licenseNumber}</td>
                 <td className="py-3 px-6">
-                  <a href={driver.licenseDoc} className="text-blue-600">View</a>
+                  <button onClick={() => handleViewCertificate(driver.licensePhotograph)} className="text-blue-600">View</button>
+                 
                 </td>
                 <td className="py-3 px-6">
-                  <a href={driver.carRegDoc} className="text-blue-600">View</a>
+                  <button onClick={() => handleViewCertificate(driver.faceIDPhoto)} className="text-blue-600">View</button>
                 </td>
-                <td className="py-3 px-6">{driver.status}</td>
+                <td className="py-3 px-6">{driver.isVerified?"Approved":"Not Approved"}</td>
                 <td className="py-3 px-6 space-x-2">
-                  <button
+                {!driver.isVerified?
+                   <button
                     className="bg-primaryOrange-light hover:bg-primaryOrange text-white font-semibold py-2 px-4 rounded"
-                    onClick={() => handleApprove(driver.id)}
+                    onClick={() => handleApprove(driver._id,true)}
                   >
                     Approve
-                  </button>
+                  </button>:null}
+                 
                   <button
                     className="bg-primaryOrange-light hover:bg-primaryOrange text-white font-semibold py-2 px-4 rounded"
-                    onClick={() => handleReject(driver.id)}
+                    onClick={() => handleApprove(driver._id,false)}
                   >
                     Reject
                   </button>
@@ -189,6 +220,7 @@ const SuperUser = () => {
           )}
         </div>
       </section>
+      <ToastContainer/>
     </div>
   );
 };

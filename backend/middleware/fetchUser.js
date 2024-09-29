@@ -5,9 +5,9 @@ dotenv.config();
 const JWT_Token = process.env.JWT_Token;
 
 const fetchuser = (req, res, next) => {
-    
+    console.log("hel")
     const token = req.headers['auth-token'];
-console.log(token)
+
     // Check if the token is provided
     if (!token) {
         return res.status(401).json({ error: "Invalid or Null Token! Enter correct Token." });

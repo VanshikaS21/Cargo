@@ -20,5 +20,7 @@ const userSchema = new Schema({
     isVerified: { type: Boolean, default: false }, // For Super User verification
 }, { timestamps: true }); // Adds createdAt and updatedAt
 
+
+
 export default mongoose.model('User', userSchema);
 

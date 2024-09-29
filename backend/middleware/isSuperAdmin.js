@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { decode } from 'jsonwebtoken';
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -8,10 +8,10 @@ if (!JWT_Token) {
 }
 
 const isSuperAdmin = (req, res, next) => {
-    console.log(req)
     // Get the authentication token from the request headers
-
+console.log("hi")
     const token = req.headers['auth-token'];
+
     if (!token) {
         return res.status(401).json({ message: 'Authentication token not provided' });
     }
@@ -21,6 +21,7 @@ const isSuperAdmin = (req, res, next) => {
         const decodedToken = jwt.verify(token, JWT_Token);
 
         // Check if the user role is "SuperUser"
+        console.log(decodedToken.user)
         if (!decodedToken.user || decodedToken.user.role !== 'SuperUser') {
             return res.status(403).json({ message: 'You are not authorized to access this resource' });
         }
