@@ -31,7 +31,7 @@ function HomepageHero() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+      e.preventDefault();
 
     // Calculate directions after submitting the form
     if (autocompleteFromRef.current && autocompleteToRef.current) {

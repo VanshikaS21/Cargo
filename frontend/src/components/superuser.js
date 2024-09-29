@@ -61,7 +61,6 @@ const SuperUser = () => {
   };
 
   const handleApprove = async (id, status) => {
-    console.log(id)
     const token = localStorage.getItem('authToken');
     try {
       const response = await axios.put(`${REACT_APP_BACKEND_URL}/user/verify/${id}`, { status:status }, {
