@@ -16,8 +16,6 @@ const App = () => {
           <div className="App bg-yellow-100 w-full h-screen" >
             <Routes>
           <Route path="/" element={<Homepage />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
           <Route path="/register" element={<RegisterBox />} />
           <Route path="/login" element={<LoginBox />} />
           <Route path="/superuser" element={ 

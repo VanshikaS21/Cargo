@@ -138,7 +138,13 @@ function HomepageHero() {
       {/* Google Map */}
       <div className="relative w-2/3 h-96 mt-6 mb-6">
         <GoogleMap
-          mapContainerStyle={{ height: "100%", width: "100%" }}
+          mapContainerStyle={{
+            height: "100%",
+            width: "100%",
+            border: "2px solid #ccc", // Set your desired border color and width
+            borderRadius: "8px", // Optional: add border radius for rounded corners
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)", // Set your desired box shadow
+          }}
           center={center} // Use the state to set center
           zoom={10} // Adjust the zoom level as needed
         >
