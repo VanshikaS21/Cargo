@@ -22,7 +22,6 @@ router.post(
     body('userid', 'User ID is required').notEmpty(),
 
     async (req, res) => {
-        console.log(req.body)
         // Check for validation errors
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

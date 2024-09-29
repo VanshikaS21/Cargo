@@ -5,7 +5,6 @@ dotenv.config();
 const JWT_Token = process.env.JWT_Token;
 
 const fetchuser = (req, res, next) => {
-    console.log("hel")
     const token = req.headers['auth-token'];
 
     // Check if the token is provided
