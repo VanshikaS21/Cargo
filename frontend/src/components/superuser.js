@@ -1,10 +1,10 @@
 import React, { useState,useEffect } from 'react';
-import Logo from '../components/UI/logo'; // Adjust the import path as needed
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { getUserId } from '../utils/AuthFunctions';
+import Navbar from '../components/UI/Navbar';
 
 import { openBase64NewTab } from '../utils/base64certificate';
 import { REACT_APP_BACKEND_URL } from '../utils/constants';
@@ -14,11 +14,6 @@ const SuperUser = () => {
   const navigate=useNavigate()
   const [drivers, setDrivers] = useState([
   ]);
-  const handleLogout=()=>{
-    navigate('/login')
-    localStorage.removeItem('token');
-  
-  }
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('authToken')
@@ -84,44 +79,10 @@ const SuperUser = () => {
   };
 
 
-  
-
-
   return (
-    <div className="p-8 bg-yellow-100 min-h-screen">
-      {/* Header */}
-      <header className="flex justify-between items-center py-6 px-8 bg-white shadow-md">
-        {/* CarGo Logo */}
-        <div className="flex items-center">
-          <Logo className="h-10 w-10 mr-2" />
-          <span className="text-3xl font-bold text-black">CarGo</span>
-        </div>
-        <nav>
-          <ul className="flex space-x-8 text-gray-600">
-            <li className="hover:text-gray-800">
-              <a href="#">Home</a>
-            </li>
-            <li className="hover:text-gray-800">
-              <a href="#">Verify Documents</a>
-            </li>
-            <li className="hover:text-gray-800">
-              <a href="#">Search Users</a>
-            </li>
-            <li className="hover:text-gray-800">
-              <a href="#">Search Vehicles</a>
-            </li>
-            <li className="hover:text-gray-800">
-              <a href="#">Search Rides</a>
-            </li>
-            <li>
-              <button className="bg-primaryOrange-light hover:bg-primaryOrange text-white font-semibold py-2 px-4 rounded" onClick={handleLogout}>
-                Logout
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </header>
-
+    <>
+    <Navbar />
+    <div className=" bg-yellow-100 flex-flex-col p-5">
       {/* Verification Section */}
       <section className="mt-8">
         <h2 className="text-xl font-semibold text-black-600 mb-4">Verify Drivers and Documents</h2>
@@ -142,13 +103,17 @@ const SuperUser = () => {
         </div>
 
         {/* Drivers Table */}
-        <table className="w-full bg-white rounded-lg shadow-md">
+        <div className="overflow-x-auto">
+        <table className=" bg-white rounded-lg shadow-md">
           <thead className="bg-gray-100">
             <tr>
+              <th className="py-3 px-6">FaceID</th>
               <th className="py-3 px-6">Name</th>
+              <th className="py-3 px-6">Age</th>
+              <th className="py-3 px-6">Gender</th>
+              <th className="py-3 px-6">Phone No.</th>
               <th className="py-3 px-6">License No.</th>
               <th className="py-3 px-6">License Document</th>
-              <th className="py-3 px-6">Car Registration</th>
               <th className="py-3 px-6">Status</th>
               <th className="py-3 px-6">Action</th>
             </tr>
@@ -156,11 +121,16 @@ const SuperUser = () => {
           <tbody>
             {drivers.map((driver) => (
               <tr key={driver.id} className="border-b text-center">
+                <td className="py-3 px-6">
+                <button onClick={() => handleViewCertificate(driver.faceIDPhoto)} className="text-blue-600">View</button>
+                </td>
                 <td className="py-3 px-6">{driver.name}</td>
+                <td className="py-3 px-6">{driver.age}</td>
+                <td className="py-3 px-6">{driver.gender}</td>
+                <td className="py-3 px-6">{driver.phone}</td>
                 <td className="py-3 px-6">{driver.licenseNumber}</td>
                 <td className="py-3 px-6">
                   <button onClick={() => handleViewCertificate(driver.licensePhotograph)} className="text-blue-600">View</button>
-                 
                 </td>
                 <td className="py-3 px-6">
                   <button onClick={() => handleViewCertificate(driver.faceIDPhoto)} className="text-blue-600">View</button>
@@ -186,10 +156,11 @@ const SuperUser = () => {
             ))}
           </tbody>
         </table>
+        </div>
       </section>
 
       {/* Search Section */}
-      <section className="mt-12">
+      {/* <section className="mt-12">
         <h2 className="text-xl font-semibold text-black-600 mb-4">Search Users, Vehicles, or Rides</h2>
         <div className="flex space-x-4 mb-6">
           <input
@@ -205,7 +176,6 @@ const SuperUser = () => {
           </button>
         </div>
 
-        {/* Display Results */}
         <div className="bg-white rounded-lg shadow-md p-4">
           {results.length > 0 ? (
             <ul>
@@ -219,9 +189,11 @@ const SuperUser = () => {
             <p>No results found.</p>
           )}
         </div>
-      </section>
+      </section> */}
       <ToastContainer/>
     </div>
+    </>
+    
   );
 };
 
