@@ -5,21 +5,23 @@ import jwt from 'jsonwebtoken';
 import User from "../../models/userSchema.js"; 
 
 const router = express.Router();
-
 router.post(
     '/signup',
-    
+
     // Validate password to be at least 8 characters long
     body('password', 'Password should have a minimum length of 8').isLength({ min: 8 }),
 
     // Validate name to have at least 3 characters
     body('name', 'Name should have more than 3 characters').isLength({ min: 3 }),
 
-    // Validate email using a simple regex to contain @ and domain structure
+    // Validate email using a regex to ensure proper email format
     body('email', 'Invalid email format').matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/),
 
     // Validate that the userid is provided and not empty
     body('userid', 'User ID is required').notEmpty(),
+
+    // Validate phone number to be exactly 10 digits
+    body('phone', 'Phone number must be exactly 10 digits').matches(/^\d{10}$/),
 
     async (req, res) => {
         // Check for validation errors
@@ -28,15 +30,19 @@ router.post(
             return res.status(400).json({ success: false, message: "Invalid Credentials", errors: errors.array() });
         }
 
-        // Check if the email or userid already exists in the database
+        // Check if the email, userid, or phone already exists in the database
         const validateEmail = await User.findOne({ email: req.body.email });
         const validateUserid = await User.findOne({ userid: req.body.userid });
+        const validatePhone = await User.findOne({ phone: req.body.phone });
 
         if (validateEmail) {
             return res.status(400).json({ success: false, message: 'Email already exists' });
         }
         if (validateUserid) {
             return res.status(400).json({ success: false, message: 'User ID already exists' });
+        }
+        if (validatePhone) {
+            return res.status(400).json({ success: false, message: 'Phone number already exists' });
         }
 
         try {
@@ -49,7 +55,8 @@ router.post(
                 userid: req.body.userid,
                 password: hash,
                 email: req.body.email,
-                name: req.body.name
+                name: req.body.name,
+                phone: req.body.phone // Include phone number
             });
 
             // Save the new user to the database
@@ -62,7 +69,6 @@ router.post(
         }
     }
 );
-
 
 router.post(
     '/login',

@@ -41,6 +41,8 @@ function RegisterBox() {
   const [userid, setuserid] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const[phone, setPhone] = useState(null);
+  const [phoneError, setPhoneError] = useState(false);
   const [useridError, setuseridError] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
@@ -51,6 +53,7 @@ const navigate=useNavigate()
     setuseridError(false);
     setEmailError(false);
     setPasswordError(false);
+    setPhoneError(false)
     let formErrors = [];
     if (!userid) {
       formErrors.push("User Id is required");
@@ -61,6 +64,10 @@ const navigate=useNavigate()
     }
     if (!email) {
       formErrors.push("Email is required");
+      setEmailError(true);
+    }
+    if (!phone) {
+      formErrors.push("Phone is required");
       setEmailError(true);
     }
     if (!validateEmail(email)) {
@@ -81,7 +88,7 @@ const navigate=useNavigate()
     if (formErrors.length === 0) {
       // Only send the request if there are no errors
       axios
-        .post("http://localhost:5000/api/auth/signup", { userid, name, email, password })
+        .post("http://localhost:5000/api/auth/signup", { userid, name, email, password,phone })
         .then((response) => {
           toast.success("Registration successful!"); // Show success toast
           setTimeout(()=>{
@@ -208,6 +215,23 @@ const navigate=useNavigate()
                   }}
                 />
               </div>
+              <div className="mb-4 w-full">
+                <input
+                  type="text"
+                  className={
+                    "text-sm focus:shadow-soft-primary-outline leading-5.6 ease-soft block w-full appearance-none rounded-lg border border-solid border-gray-300 bg-white bg-clip-padding py-2 px-3 font-normal text-gray-700 transition-all focus:border-gray-300 focus:bg-white focus:text-gray-700 focus:outline-none focus:transition-shadow " +
+                    (emailError ? "border-red-500" : "")
+                  }
+                  placeholder="Enter Phone number "
+                  name="phone"
+                  aria-label="Phone number"
+                  autoComplete="phone"
+                  value={phone}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                  }}
+                />
+                </div>
 
               <div className="mb-4 w-full">
                 <input
