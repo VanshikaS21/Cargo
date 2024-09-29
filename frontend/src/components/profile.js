@@ -68,7 +68,6 @@ const Profile = () => {
       ...prev,
       [fieldName]: base64Data, // Use the base64 data from the file
     }));
-    console.log(formData);
   };
 
   const handleRoleToggle = async () => {

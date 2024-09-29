@@ -54,12 +54,11 @@ function LoginBox() {
 
         localStorage.setItem("authToken", response.data.authToken);
         const role = getUserRole();
-        console.log(role)
         if (role === 'SuperUser') {
           navigate('/superuser')
         }else{
-          console.log("hello")
-         navigate('/')
+         
+         navigate('/profile')
         }
       }else{
         toast.error(response.data.success); // Show error message
@@ -120,9 +119,9 @@ function LoginBox() {
             </div>
           )}
           <div className="p-6 mb-0 text-center bg-white border-b-0 rounded-t-2xl text-gray-800 font-bold">
-            <h5>Login with</h5>
+            <h5>Login </h5>
           </div>
-          <div className="flex flex-col lg:flex-row justify-items-center gap-y-4 lg:gap-x-4 lg:justify-around m-4 mt-0">
+         {/* <div className="flex flex-col lg:flex-row justify-items-center gap-y-4 lg:gap-x-4 lg:justify-around m-4 mt-0">
             <div className="flex font-bold text-center justify-evenly p-6 lg:gap-x-4 text-gray-800 align-middle transition-all bg-transparent border border-gray-300 border-solid rounded-lg shadow-none cursor-pointer hover:scale-102 leading-pro ease-soft-in tracking-tight-soft hover:bg-primaryOrange-light hover:text-white hover:cursor-pointer duration-200">
               <BsGoogle size={24} />
               <h2>Continue with Google</h2>
@@ -132,6 +131,7 @@ function LoginBox() {
           <div className="flex font-bold text-center justify-evenly  text-gray-800 align-middle">
             <h2>OR</h2>
           </div>
+          */}
           <div className="flex-auto p-4">
             <form role="form text-left">
               <div className="mb-4">
