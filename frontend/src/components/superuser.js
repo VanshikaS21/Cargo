@@ -137,6 +137,9 @@ const SuperUser = () => {
                 <td className="py-3 px-6">{driver.age}</td>
                 <td className="py-3 px-6">{driver.gender}</td>
                 <td className="py-3 px-6">{driver.phone}</td>
+                <td className="py-3 px-6">{driver.age}</td>
+                <td className="py-3 px-6">{driver.gender}</td>
+                <td className="py-3 px-6">{driver.phone}</td>
                 <td className="py-3 px-6">{driver.licenseNumber}</td>
                 <td className="py-3 px-6">
                   <button onClick={() => handleViewCertificate(driver.licensePhotograph)} className="text-blue-600">View</button>
@@ -164,6 +167,7 @@ const SuperUser = () => {
             ))}
           </tbody>
         </table>
+        </div>
         </div>
       </section>
 
@@ -203,6 +207,8 @@ const SuperUser = () => {
       <ToastContainer />
       </div>
     </div>
+    </>
+    
   );
 };
 
