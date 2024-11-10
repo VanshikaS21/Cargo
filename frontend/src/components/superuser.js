@@ -163,19 +163,19 @@ const SuperUser = () => {
         </section>
         <section className="mt-8">
           <h2 className="text-xl font-semibold text-black-600 mb-4">All Rides</h2>
-                
-          <div className='overflow-x-auto w-full'>
+          <div className="overflow-x-auto w-full">
             <table className="w-full bg-white rounded-lg shadow-md">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="py-3 px-6">Driver Name</th>
-                  <th className="py-3 px-6">To</th>
                   <th className="py-3 px-6">From</th>
+                  <th className="py-3 px-6">To</th>
+                  <th className="py-3 px-6">Available Seats</th>
                   <th className="py-3 px-6">Fare</th>
-                  <th className="py-3 px-6">AvailableSeats</th>
                   <th className="py-3 px-6">Date</th>
                   <th className="py-3 px-6">Passengers Name</th>
                   <th className="py-3 px-6">Routes</th>
+                  <th className="py-3 px-6">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -186,69 +186,34 @@ const SuperUser = () => {
                     <td className="py-3 px-6">{ride.extdestination}</td>
                     <td className="py-3 px-6">{ride.availableSeats}</td>
                     <td className="py-3 px-6">{ride.fare}</td>
-                    <td className="py-3 px-6">{format(ride.date, 'yyyy-MM-dd')}</td>
+                    <td className="py-3 px-6">{format(new Date(ride.date), 'yyyy-MM-dd')}</td>
                     <td className="py-3 px-6">
-  {ride.passengers && ride.passengers.length > 0 ? (
-    ride.passengers.map((value, index) => (
-      <span key={index}>{value.name}{index !== ride.passengers.length - 1 && ', '}</span>
-    ))
-  ) : (
-    <span>No passengers</span>
-  )}
-</td>
-<td className="py-3 px-6">
-  {ride.route && ride.route.length > 0 ? (
-    ride.route.map((value, index) => (
-      <span key={index}>{value}{index !== ride.route.length - 1 && ', '}</span>
-    ))
-  ) : (
-    <span>No route information</span>
-  )}
-</td>
-
-                    
+                      {ride.passengers && ride.passengers.length > 0 ? (
+                        ride.passengers.map((value, index) => (
+                          <span key={index}>{value.name}{index !== ride.passengers.length - 1 && ', '}</span>
+                        ))
+                      ) : (
+                        <span>No passengers</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-6">
+                      {ride.route && ride.route.length > 0 ? (
+                        ride.route.map((value, index) => (
+                          <span key={index}>{value}{index !== ride.route.length - 1 && ', '}</span>
+                        ))
+                      ) : (
+                        <span>No route information</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-6">{ride.rideState || 'N/A'}</td> {/* RIDE STATUS DISPLAY */}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          
         </section>
 
 
-        {/* Search Section 
-      <section className="mt-12">
-        <h2 className="text-xl font-semibold text-black-600 mb-4">Search Users, Vehicles, or Rides</h2>
-        <div className="flex space-x-4 mb-6">
-          <input
-            type="text"
-            placeholder="Enter User ID, Vehicle Reg No., or Ride ID"
-            className="p-4 w-80 bg-gray-100 border-2 border-gray-300 rounded"
-          />
-          <button
-            onClick={handleSearch}
-            className="bg-primaryOrange-light hover:bg-primaryOrange text-white font-semibold py-2 px-4 rounded"
-          >
-            Search
-          </button>
-        </div>
-
- Display Results 
-        <div className="bg-white rounded-lg shadow-md p-4">
-          {results.length > 0 ? (
-            <ul>
-              {results.map((result) => (
-                <li key={result.id} className="py-2 px-4 border-b">
-                  {result.type}: {result.name || result.regNo || result.driver}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No results found.</p>
-          )}
-        </div>
-      </section>
-      */}
         <ToastContainer />
       </div>
     </div>

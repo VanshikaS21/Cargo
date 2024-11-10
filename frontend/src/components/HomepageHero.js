@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
-
+import { FaRupeeSign, FaDollarSign } from 'react-icons/fa';
 import {
   FaMapPin as MapPinIcon,
   FaGlobe as GlobeAltIcon,
@@ -14,7 +14,6 @@ import {
 } from "@react-google-maps/api";
 import { getUserId, getUserRole } from "../utils/AuthFunctions";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -91,7 +90,17 @@ function HomepageHero({ rides, setRides }) {
         }
     }
 
-    
+    const handleKeyPress = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        // Only submit if all required fields are filled
+        if (formData.from && formData.to && formData.date && formData.passengers) {
+          handleSubmit(e);
+        } else {
+          toast.error("Please fill out all fields before submitting.");
+        }
+      }
+    };
     const handlePayment = () => {
       console.log(ride.fare);
       console.log(formDataCopy.passengers);
@@ -199,18 +208,24 @@ function HomepageHero({ rides, setRides }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (role == "Driver") {
+    
+    // Check if all required fields are filled
+    if (!formData.from || !formData.to || !formData.date || !formData.passengers) {
+      toast.error("Please fill out all fields before submitting.");
+      return;
+    }
+  
+    if (role === "Driver") {
       const response = await axios.post(
         "http://localhost:5000/api/ride/",
         formData
       );
-      if(response.data.success){
+      if (response.data.success) {
         setFormData(emptyData);
-        toast.success("Ride published Successfully!"); // Show success message
-        setRides(prev =>[ ...prev]);
+        toast.success("Ride published Successfully!");
+        setRides((prev) => [...prev]);
         getDriverRides();
       }
-      
     } else {
       await calculateRoute();
       seFormDataCopy(formData);
@@ -263,8 +278,8 @@ function HomepageHero({ rides, setRides }) {
 
       {/* Form Container with Extended Yellow Section */}
       <div className="relative w-2/3 mx-auto bg-yellow-150 rounded-md z-10 my-7">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* From Location Field */}
+      <form onSubmit={handleSubmit} onKeyDown={(e) => e.key === "Enter" && e.preventDefault()} className="space-y-4">
+      {/* From Location Field */}
           <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full">
             <MapPinIcon className="h-6 w-6 text-gray-500 mr-3" />
             <Autocomplete
@@ -350,8 +365,8 @@ function HomepageHero({ rides, setRides }) {
           {role === "Driver" ? (
             <>
               <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full">
-                <UserIcon className="h-6 w-6 text-gray-500 mr-3" />
-                <input
+              <FaRupeeSign className="h-6 w-6 text-gray-500 mr-3" />
+                  <input
                   name="fare"
                   value={formData.fare}
                   onChange={handleChange}
