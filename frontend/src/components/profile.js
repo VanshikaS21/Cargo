@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useActionData } from 'react-router-dom'; // Assuming you're using react-router for navigation.
+import { Link, useNavigate, useActionData } from 'react-router-dom'; // Assuming you're using react-router for navigation.
 import Logo from '../components/UI/logo';
 import axios from 'axios';
 import { getUserId } from '../utils/AuthFunctions';
@@ -27,6 +27,7 @@ const Profile = () => {
     insuranceDocument: null,
     pucCertificate: null,
   });
+  const Navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const dropdownRef = useRef(null); // Create a ref for the dropdown menu
   const [role, setRole] = useState('')
@@ -52,7 +53,6 @@ const Profile = () => {
     }
   };
   useEffect(() => {
-
     fetchData();
   }, [role]);
   const handleImageUpload = (event) => {
@@ -84,7 +84,9 @@ const Profile = () => {
           'auth-token': token,
         },
       });
-
+      window.alert('After change role you have to re-login');
+      localStorage.removeItem('authToken');
+      Navigate('/login');
       if (response.data.success) {
         toast.success('Role updated successfully!');
       } else {
