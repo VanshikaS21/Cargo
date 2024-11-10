@@ -84,7 +84,8 @@ const Profile = () => {
           'auth-token': token,
         },
       });
-
+      window.alert('After change role you have to re-login');
+      localStorage.removeItem('authToken');
       if (response.data.success) {
         toast.success('Role updated successfully!');
       } else {
