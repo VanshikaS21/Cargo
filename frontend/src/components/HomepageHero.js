@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
+
 import {
   FaMapPin as MapPinIcon,
   FaGlobe as GlobeAltIcon,
@@ -30,9 +31,10 @@ function HomepageHero({ rides, setRides }) {
     driverId: driverId,
   }
   const [formData, setFormData] = useState(emptyData);
+  const [ride,setRide] = useState({});
+  const [formDataCopy,seFormDataCopy] = useState();
   const [distance, setDistance] = useState("");
   const role = getUserRole();
-  const Navigate = useNavigate();
   const [isDataFetched,setIsDataFetched] = useState(false);
 
   const [directions, setDirections] = useState(null);
@@ -68,7 +70,58 @@ function HomepageHero({ rides, setRides }) {
     const newValues = inputValues.filter((_, i) => i !== index);
     setInputValues(newValues);
   };
+    useEffect(() => {
+      // Dynamically load the Razorpay script
+      const script = document.createElement('script');
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      document.body.appendChild(script);
+      
+      return () => {
+        document.body.removeChild(script);
+      };
+    }, []);
+    const handlePaymentSuccess = async()=>{
+        const response = await axios.get(
+          `http://localhost:5000/api/ride/book?userId=${driverId}&rideId=${ride._id}&source=${formDataCopy.from}&destination=${formDataCopy.to}&passengers=${formDataCopy.passengers}`
+        );
+        console.log()
+        if (response.data.success) {
+          setRides(response.data.data);
+        }
+    }
 
+    
+    const handlePayment = () => {
+      console.log(ride.fare);
+      console.log(formDataCopy.passengers);
+      const payment_amount = Number(ride.fare) * Number(formDataCopy.passengers) *100;
+      console.log(payment_amount);
+      const options = {
+        key: "rzp_test_YJBXNlTk3aEt8i",  // Replace with your Razorpay Test Key ID
+        amount: payment_amount,               // Amount in the smallest currency unit (e.g., 50000 = ₹500)
+        currency: "INR",
+        name: "Cargo",
+        description: "Test Payment",
+        image: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png',
+        handler: function (response) {
+          handlePaymentSuccess();
+        },
+        notes: {
+          address: "Hello World"
+        },
+        theme: {
+          color: "#F37254"
+        }
+      };
+  
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    };
+    const  handleBooking = (rideData)=>{
+      setRide(rideData);
+      handlePayment();
+    }
   const calculateRoute = async () => {
     // Calculate directions after submitting the form
     if (autocompleteFromRef.current && autocompleteToRef.current) {
@@ -160,12 +213,12 @@ function HomepageHero({ rides, setRides }) {
       
     } else {
       await calculateRoute();
+      seFormDataCopy(formData);
       const response = await axios.get(
         `http://localhost:5000/api/ride?to=${formData.to}&from=${formData.from}&passengers=${formData.passengers}&date=${formData.date}`
       );
       if (response.data.success) {
         setRides(response.data.data);
-        console.log(rides);
       } else {
         setRides([]);
       }
@@ -376,8 +429,8 @@ function HomepageHero({ rides, setRides }) {
   rides.length === 0 ? (
     <div>No Rides Found</div>
   ) : (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 bg-gray-200 p-10 rounded-lg">
-      {rides.map((value, index) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 bg-gray-200 p-10 rounded-lg" style={{ zIndex: 999 }} >
+      {rides?.map((value, index) => (
         <div
           key={index}
           className="border p-6 rounded-lg shadow hover:shadow-lg transition bg-white"
@@ -386,7 +439,15 @@ function HomepageHero({ rides, setRides }) {
             {value.extsource} to {value.extdestination}
           </h3>
           <p>Starting from {value.fare}</p>
-          <button className="mt-4 px-4 py-2 bg-orange-500 text-white rounded">
+          <p>AvailableSeats : {value.availableSeats}</p>
+          {value.route.map((routeValue, routeIndex) => (
+  <span key={routeIndex}>
+    {routeValue},{routeIndex < value.route.length - 1 ? ', ' : ''}
+  </span>
+))}
+<br/>
+
+          <button onClick={()=>handleBooking(value)} className="mt-4 px-4 py-2 bg-orange-500 text-white rounded">
             Book Now
           </button>
         </div>

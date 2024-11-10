@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const rideSchema = new Schema({
   driver: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  passengers: [{ passengerId: { type: Schema.Types.ObjectId, ref: 'User' }, source: { type: String, required: true }, destination: { type: String, required: true }}],
+  passengers: [{ passengerId: { type: Schema.Types.ObjectId, ref: 'User' }, source: { type: String, required: true }, destination: { type: String, required: true },name:{ type: String, required: true },passengers:{type:Number ,required:true}}],
   extsource: { type: String, required: true },
   extdestination: { type: String, required: true },
   date: { type: Date, required: true },

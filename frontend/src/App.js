@@ -20,7 +20,6 @@ const App = () => {
           <Route path="/login" element={<LoginBox />} />
           <Route path="/superuser" element={ 
             <SuperUser />} />
-         
           <Route
             path="/profile"
             element={

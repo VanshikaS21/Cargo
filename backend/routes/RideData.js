@@ -1,6 +1,6 @@
 import express from 'express';
-import { getRides,createRide,cancelRide } from '../services/rides.js';
-const router = express.Router();
+import { getRides,createRide,cancelRide,bookRide,getAllRides} from '../services/rides.js';
+const router = express.Router();    
 
 router.get('/',async(req,res)=>{
     const response = await getRides(req);
@@ -14,10 +14,21 @@ router.post('/',async(req,res)=>{
 
     response ?  res.status(200).json({data:response,success:true}) : res.status(500).json({error: "Error while fetching Data"}) ;
 })
+router.get("/book",async(req,res)=>{
+    const response = await bookRide(req);
+
+    response ?  res.status(200).json({success:true}) : res.status(500).json({error: "Error while fetching Data"}) ;
+})
 router.get("/cancel",async(req,res)=>{
     const response = await cancelRide(req);
 
     response ?  res.status(200).json({data:response,success:true}) : res.status(500).json({error: "Error while fetching Data"}) ;
 })
+router.get("/all",async(req,res)=>{
+    const response = await getAllRides(req);
+
+    response ?  res.status(200).json({data:response,success:true}) : res.status(500).json({error: "Error while fetching Data"}) ;
+})
+
 
 export default router;

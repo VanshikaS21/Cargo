@@ -1,5 +1,36 @@
 import { ReceiptRefundIcon } from "@heroicons/react/16/solid";
 import Ride from "../models/rideSchema.js"; // Import the Ride model
+import User from "../models/userSchema.js"; // Import the Ride model
+
+async function getAllRides(req) {
+  try {
+    // Fetch all rides that are not cancelled
+    const rides = await Ride.find();
+
+    const ridesWithDriverName = await Promise.all(rides.map(async (ride) => {
+      // Fetch the driver from the User table using the driverId in the ride
+      const driver = await User.findById(ride.driver);
+      const driverName = driver ? driver.name : "Unknown Driver";  // Default if no driver found
+
+      // Return the ride with the driver's name added or replacing driverId
+      return {
+        ...ride.toObject(), // Convert ride to plain object
+        driverName,  // Add driverName field to the ride object
+      };
+    }));
+
+    if (!rides || rides.length === 0) {
+      console.log("No rides found!");
+      return [];
+    }
+    console.log("Rides fetched successfully");
+    return ridesWithDriverName;
+  } catch (error) {
+    console.error("Error fetching rides:", error);
+    return [];
+  }
+}
+
 
 async function getRides(req) {
   try {
@@ -47,6 +78,7 @@ async function getRides(req) {
   }
 }
 
+
 async function createRide(request) {
   try {
     const newRide = new Ride({
@@ -88,5 +120,47 @@ async function cancelRide(req) {
     return rides;
   }
 }
+  async function bookRide(req, res) {
+    try {
+      // Step 1: Fetch user details using userId (if needed, for reference or validation)
+      const user = await User.findById(req.query.userId).select(['_id', 'name']);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      // Step 2: Prepare the passenger data you want to add
+      const passengerData = {
+        passengerId: user._id,
+        source: req.query.source, // Assuming source is passed in the request body
+        destination: req.query.destination, // Assuming destination is passed in the request body
+        name: user.name, // Assuming passenger's name is passed in the request body
+        passengers: req.query.passengers, // Assuming the number of passengers is passed in the request body
+      };
+  
+      // Step 3: Find the ride and update the passengers array
+      const updatedRide = await Ride.findByIdAndUpdate(
+        req.query.rideId,
+        {
+          $push: { passengers: passengerData }, // Pushing the new passenger data into the 'passengers' array
+          $inc: { availableSeats: -req.query.passengers },
+        },
+        {
+          new: true, // Return the updated document
+          runValidators: true, // Ensure validation is applied
+        }
+      );
+  
+      if (!updatedRide) {
+        return 0;
+      }
+  
+      // Step 4: Respond with the updated ride data
+      return 1;
+    } catch (error) {
+      console.error('Error booking ride:', error);
+      return 0;
+    }
+  
+}
 // Call the function to create the ride
-export { createRide, getRides, cancelRide };
+export { createRide, getRides, cancelRide,bookRide,getAllRides };
