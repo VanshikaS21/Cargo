@@ -7,14 +7,17 @@ import SafetyAndTrust from "./SafetyAndTrust";
 import JoinUs from "./JoinUs";
 import ServiceCards from "./ServiceCards";
 import Navbar from "./UI/Navbar";
+import Rides from "./Rides";
+import {useState} from 'react'
 
 function Homepage() {
+  const [rides,setRides] = useState([]);
   return (
     <>
       <Navbar />
-      <HomepageHero />
+      <HomepageHero rides={rides} setRides={setRides}/>
+      <Rides rides={rides} setRides={setRides}/>
       <ServiceCards />
-      <PopularPools />
       <HowItWorks />
       <SafetyAndTrust />
       <JoinUs />

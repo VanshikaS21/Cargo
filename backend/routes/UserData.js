@@ -3,7 +3,6 @@ import User from '../models/userSchema.js';
 import { param, body, validationResult } from 'express-validator'; // Import validation functions
 import isSuperAdmin from '../middleware/isSuperAdmin.js';
 import fetchuser from '../middleware/fetchUser.js';
-
 const router = express.Router();
 
 // Get all users
@@ -173,7 +172,9 @@ router.put('/verify/:id',
         }
     }
 );
-//fetch drivers 
+
+
+
 
 
 

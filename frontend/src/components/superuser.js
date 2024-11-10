@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { getUserId } from '../utils/AuthFunctions';
 import Navbar from './UI/Navbar';
+import { format } from 'date-fns';
 
 import { openBase64NewTab } from '../utils/base64certificate';
 import { REACT_APP_BACKEND_URL } from '../utils/constants';
@@ -19,8 +20,9 @@ const SuperUser = () => {
   const handleLogout = () => {
     navigate('/login')
     localStorage.removeItem('token');
-
   }
+  const [rides, setRides] = useState([]);
+
   const fetchData = async () => {
     try {
       const token = localStorage.getItem('authToken')
@@ -29,16 +31,23 @@ const SuperUser = () => {
           'auth-token': token,
         },
       });
+      const ridesResponse = await axios.get(`${REACT_APP_BACKEND_URL}/ride/all`, {
+        headers: {
+          'auth-token': token,
+        },
+      });
       if (response.data.success) {
         const filteredDrivers = response.data.data.filter(driver => driver.role === 'Driver');
         setDrivers(filteredDrivers);
+      }
+      if (ridesResponse.data.success) {
+        setRides(ridesResponse.data.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
   useEffect(() => {
-
     fetchData();
   }, [verification]);
 
@@ -85,6 +94,7 @@ const SuperUser = () => {
       console.error('Error approving driver:', error);
     }
   };
+  console.log(rides);
 
   return (
     <div className="bg-yellow-100 min-h-screen">
@@ -95,23 +105,7 @@ const SuperUser = () => {
       <div className=" mx-4">
         <section className="mt-8">
           <h2 className="text-xl font-semibold text-black-600 mb-4">Verify Drivers and Documents</h2>
-          <div className="flex space-x-4 mb-6">
-            <input
-              type="text"
-              placeholder="Search Driver by Name or ID"
-              className="p-4 w-80 bg-gray-100 border-2 border-gray-300 rounded"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button
-              onClick={handleSearch}
-              className="bg-primaryOrange-light hover:bg-primaryOrange text-white font-semibold py-2 px-4 rounded"
-            >
-              Search
-            </button>
-          </div>
-
-          {/* Drivers Table */}
+        
           <div className='overflow-x-auto w-full'>
             <table className="w-full bg-white rounded-lg shadow-md">
               <thead className="bg-gray-100">
@@ -165,7 +159,62 @@ const SuperUser = () => {
               </tbody>
             </table>
           </div>
+          
         </section>
+        <section className="mt-8">
+          <h2 className="text-xl font-semibold text-black-600 mb-4">All Rides</h2>
+                
+          <div className='overflow-x-auto w-full'>
+            <table className="w-full bg-white rounded-lg shadow-md">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="py-3 px-6">Driver Name</th>
+                  <th className="py-3 px-6">To</th>
+                  <th className="py-3 px-6">From</th>
+                  <th className="py-3 px-6">Fare</th>
+                  <th className="py-3 px-6">AvailableSeats</th>
+                  <th className="py-3 px-6">Date</th>
+                  <th className="py-3 px-6">Passengers Name</th>
+                  <th className="py-3 px-6">Routes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rides.map((ride) => (
+                  <tr key={ride._id} className="border-b text-center">
+                    <td className="py-3 px-6">{ride.driverName}</td>
+                    <td className="py-3 px-6">{ride.extsource}</td>
+                    <td className="py-3 px-6">{ride.extdestination}</td>
+                    <td className="py-3 px-6">{ride.availableSeats}</td>
+                    <td className="py-3 px-6">{ride.fare}</td>
+                    <td className="py-3 px-6">{format(ride.date, 'yyyy-MM-dd')}</td>
+                    <td className="py-3 px-6">
+  {ride.passengers && ride.passengers.length > 0 ? (
+    ride.passengers.map((value, index) => (
+      <span key={index}>{value.name}{index !== ride.passengers.length - 1 && ', '}</span>
+    ))
+  ) : (
+    <span>No passengers</span>
+  )}
+</td>
+<td className="py-3 px-6">
+  {ride.route && ride.route.length > 0 ? (
+    ride.route.map((value, index) => (
+      <span key={index}>{value}{index !== ride.route.length - 1 && ', '}</span>
+    ))
+  ) : (
+    <span>No route information</span>
+  )}
+</td>
+
+                    
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+        </section>
+
 
         {/* Search Section 
       <section className="mt-12">
