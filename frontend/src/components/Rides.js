@@ -2,29 +2,18 @@ import React, { useEffect, useState } from "react";
 import { getUserId, getUserRole } from "../utils/AuthFunctions";
 import axios from "axios";
 
-function Rides() {
-  const driverId = getUserId();
+function Rides({ rides, setRides }) {
   const role = getUserRole();
-  const [rides, setRides] = useState([]);
-  const count = 1;
 
-  const getDriverRides = async () => {
+  const cancleRideHandler = async(id)=>{
     const response = await axios.get(
-      `http://localhost:5000/api/ride?driverId=${
-        role == "Driver" ? driverId : null
-      }`
-    );
-    if (response.data.success) {
-      setRides(response.data.data);
-    }
-
-  };
-  useEffect(() => {
-    if(role == 'Driver'){
-        getDriverRides();
-    }
-  }, [count]);
-  console.log(rides);
+        `http://localhost:5000/api/ride/cancel?id=${id}`
+      );
+      if (response.data.success) {
+        setRides(response.data.data);
+      }
+  }
+  console.log(rides)
 
   return (
     <>
@@ -48,8 +37,8 @@ function Rides() {
                     {value.extsource} from to {value.extdestination}
                   </h3>
                   <p>Starting from {value.fare}</p>
-                  <button className="mt-4 px-4 py-2 bg-orange-500 text-white rounded">
-                    Book Now
+                  <button onClick={()=>cancleRideHandler(value._id)} className="mt-4 px-4 py-2 bg-orange-500 text-white rounded">
+                    cancel
                   </button>
                 </div>
                     ))
