@@ -1,15 +1,21 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { FaMapPin as MapPinIcon, FaGlobe as GlobeAltIcon, FaCalendarAlt as CalendarIcon, FaUser as UserIcon } from 'react-icons/fa';
 import { Autocomplete, useJsApiLoader, GoogleMap, DirectionsRenderer } from '@react-google-maps/api';
-
+import { getUserId, getUserRole} from "../utils/AuthFunctions";
+import axios from "axios";
 function HomepageHero() {
   const [formData, setFormData] = useState({
     from: "",
     to: "",
     date: "",
+    fare: 0,
     passengers: "",
+    distance: 0,
+    driverId : getUserId(),
   });
   const [distance, setDistance] = useState("");
+  const role = getUserRole();
+  const [rides,setRides] = useState([]);
 
   const [directions, setDirections] = useState(null);
   const [center, setCenter] = useState({ lat: 0, lng: 0 }); // State to hold map center
@@ -17,10 +23,12 @@ function HomepageHero() {
   const autocompleteToRef = useRef(null);
   const dateInputRef = useRef(null);
 
+
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: 'AIzaSyDVPppkMKTKJdKzadu1Pd3WunqeKz5eSdY', // Replace with your Google Maps API key
     libraries: ["places"],
   });
+  const [inputValues,setInputValues] = useState([""]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,10 +37,22 @@ function HomepageHero() {
       [name]: value,
     });
   };
+  const handleInputChange = (e, index) => {
+    const newValues = [...inputValues];
+    newValues[index] = e.target.value;
+    setInputValues(newValues);
+  };
+  const addInput = () => {
+    setInputValues([...inputValues, '']);
+  };
 
-  const handleSubmit = async (e) => {
-      e.preventDefault();
+  // Remove an input at a specific index
+  const removeInput = (index) => {
+    const newValues = inputValues.filter((_, i) => i !== index);
+    setInputValues(newValues);
+  };
 
+  const calculateRoute = async () => {
     // Calculate directions after submitting the form
     if (autocompleteFromRef.current && autocompleteToRef.current) {
       const fromPlace = autocompleteFromRef.current.getPlace();
@@ -45,12 +65,12 @@ function HomepageHero() {
           lng: (fromPlace.geometry.location.lng() + toPlace.geometry.location.lng()) / 2,
         });
 
-        calculateRoute(fromPlace.geometry.location, toPlace.geometry.location);
+        getRoute(fromPlace.geometry.location, toPlace.geometry.location);
       }
     }
   };
 
-  const calculateRoute = (fromLocation, toLocation) => {
+  const getRoute = (fromLocation, toLocation) => {
     const directionsService = new window.google.maps.DirectionsService();
     directionsService.route(
       {
@@ -70,6 +90,34 @@ function HomepageHero() {
       }
     );
   };
+  useEffect(() => {
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      distance: distance,
+    }));
+  }, [distance]);
+  useEffect(() => {
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      routes: inputValues ,
+    }));
+  }, [inputValues]);
+  
+  const handleSubmit = async(e)=>{
+    e.preventDefault();
+    if(role == "Driver"){
+      const response = await axios.post("http://localhost:5000/api/ride/",formData);
+    }else{
+      await calculateRoute()
+      const response = await axios.get(`http://localhost:5000/api/ride?to=${formData.to}&from=${formData.from}&passengers=${formData.passengers}&date=${formData.date}`);
+      if (response.data.success) {
+        setRides(response.data.data);
+      }else{
+        setRides([]);
+      }
+    }
+  }
+  
 
   const handlePlaceChanged = useCallback((type) => {
     if (type === "from" && autocompleteFromRef.current) {
@@ -91,7 +139,7 @@ function HomepageHero() {
   if (!isLoaded) {
     return <div>Loading...</div>;
   }
-
+  
   return (
     <div className="flex flex-col justify-center items-center w-full bg-cover bg-center relative" style={{ backgroundImage: `url('/Homebg.png')`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
       {/* Opaque Overlay */}
@@ -116,6 +164,14 @@ function HomepageHero() {
             </Autocomplete>
           </div>
 
+          {role == "Driver" ?
+            <div className="flex justify-center">
+            <button className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded" onClick={()=> calculateRoute()}>Calculate Distance</button>
+          </div>
+          :
+          null
+          }
+
           {/* Date Field */}
           <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full" onClick={() => dateInputRef.current.focus()}>
             <CalendarIcon className="h-6 w-6 text-gray-500 mr-3" />
@@ -128,9 +184,51 @@ function HomepageHero() {
             <input name="passengers" value={formData.passengers} onChange={handleChange} className="w-full bg-gray-100 py-1 px-2 leading-tight focus:outline-none placeholder:text-black text-xl" type="number" placeholder="Number of Passengers" min="1" />
           </div>
 
+          
+          {
+  role === "Driver" ? (
+    <>
+    <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full">
+            <UserIcon className="h-6 w-6 text-gray-500 mr-3" />
+            <input name="fare" value={formData.fare} onChange={handleChange} className="w-full bg-gray-100 py-1 px-2 leading-tight focus:outline-none placeholder:text-black text-xl" type="number" placeholder="Fare" min="1" />
+          </div>
+      {inputValues.map((value, index) => (
+        <div key={index} style={{ marginBottom: '10px' }}>
+          <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full">
+            <input
+              className="w-full bg-gray-100 py-1 px-2 leading-tight focus:outline-none placeholder:text-black text-xl"
+              type="text"
+              value={value}
+              onChange={(e) => handleInputChange(e, index)}
+              placeholder={`Route ${index + 1}`}
+              style={{ marginRight: '5px' }}
+            />
+            <button
+              type="button"
+              className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
+              onClick={() => removeInput(index)}
+            >
+              Remove
+            </button>
+          </div>
+        </div>
+      ))}
+      <div className="flex justify-center">
+      <button
+        type="button"
+        className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
+        onClick={() => addInput()}
+      >
+        Add
+      </button>
+      </div>
+    </>
+  ) : null
+}
+
           {/* Submit Button */}
           <div className="flex justify-center">
-            <button type="submit" className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded">Search</button>
+            <button type="submit" className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded">{role == "Driver" ? "Publish Ride" : "Search"}</button>
           </div>
         </form>
       </div>
@@ -156,6 +254,23 @@ function HomepageHero() {
       <div className="text-black font-extrabold mt-4 text-center my-10 ">
         Distance: {distance} km
       </div>
+      {rides.length == 0 ? <div>No Rides Found</div> : null}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 bg-gray-200 p-10 rounded-lg">
+                {
+                    rides.map((value, index) => (
+                <div key={index} className="border p-6 rounded-lg shadow hover:shadow-lg transition bg-white">
+                    
+                  <h3 className="font-semibold text-xl">
+                    {value.extsource} from to {value.extdestination}
+                  </h3>
+                  <p>Starting from {value.fare}</p>
+                  <button className="mt-4 px-4 py-2 bg-orange-500 text-white rounded">
+                    Book Now
+                  </button>
+                </div>
+                    ))
+                }
+              </div>
     </div>
   );
 }

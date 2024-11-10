@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Logo from "../UI/logo"; // Make sure to adjust the path according to your project structure
-import { getUserName } from "../../utils/AuthFunctions";
+import { getUserName, getUserRole } from "../../utils/AuthFunctions";
 
 function Navbar() {
   const [isToggle, setIsToggle] = useState(true);
@@ -10,7 +10,7 @@ function Navbar() {
     navigate('/login')
     localStorage.removeItem('authToken');
   }
-  const name = getUserName()
+  const name = getUserName();
   return (
     <nav className="bg-gray-50 border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,6 +59,7 @@ function Navbar() {
                 >
                   Logout
                 </button>
+
               </> :
               <>
                 <NavLink

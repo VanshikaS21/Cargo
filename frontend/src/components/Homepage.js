@@ -7,14 +7,16 @@ import SafetyAndTrust from "./SafetyAndTrust";
 import JoinUs from "./JoinUs";
 import ServiceCards from "./ServiceCards";
 import Navbar from "./UI/Navbar";
+import Rides from "./Rides";
 
 function Homepage() {
   return (
     <>
       <Navbar />
       <HomepageHero />
+      <Rides/>
       <ServiceCards />
-      <PopularPools />
+      {/* <PopularPools /> */}
       <HowItWorks />
       <SafetyAndTrust />
       <JoinUs />
