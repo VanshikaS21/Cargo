@@ -19,7 +19,18 @@ import { ToastContainer, toast } from 'react-toastify';
 
 function HomepageHero({ rides, setRides }) {
   const driverId = getUserId();
-  
+  // Add this code to dynamically get today's date in the required format
+const getTodayDate = () => {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+// Inside the HomepageHero component
+const todayDate = getTodayDate(); // Get today's date
+
   const emptyData = {
     from: "",
     to: "",
@@ -92,15 +103,11 @@ function HomepageHero({ rides, setRides }) {
 
     const handleKeyPress = (e) => {
       if (e.key === 'Enter') {
-        e.preventDefault();
-        // Only submit if all required fields are filled
-        if (formData.from && formData.to && formData.date && formData.passengers) {
-          handleSubmit(e);
-        } else {
-          toast.error("Please fill out all fields before submitting.");
-        }
+        e.preventDefault(); // Prevent default behavior (form submission or focus change)
+        // Do nothing
       }
     };
+    
     const handlePayment = () => {
       console.log(ride.fare);
       console.log(formDataCopy.passengers);
@@ -169,12 +176,18 @@ function HomepageHero({ rides, setRides }) {
           const route = result.routes[0];
           const km = route.legs[0].distance.value / 1000; // Convert meters to kilometers
           setDistance(km.toFixed(2)); // Store distance in km
+  
+          // Show success toast
+          toast.success(`Distance Calculated: ${km.toFixed(2)} km`);
         } else {
           console.error("Error fetching directions:", result);
+          // Show error toast
+          toast.error("Unable to calculate distance. Please try again.");
         }
       }
     );
   };
+  
   useEffect(() => {
     setFormData((prevFormData) => ({
       ...prevFormData,
@@ -205,10 +218,11 @@ function HomepageHero({ rides, setRides }) {
     setIsDataFetched(true);
   }
   
-
+  const ridesSectionRef = useRef(null);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
+
     // Check if all required fields are filled
     if (!formData.from || !formData.to || !formData.date || !formData.passengers) {
       toast.error("Please fill out all fields before submitting.");
@@ -216,10 +230,7 @@ function HomepageHero({ rides, setRides }) {
     }
   
     if (role === "Driver") {
-      const response = await axios.post(
-        "http://localhost:5000/api/ride/",
-        formData
-      );
+      const response = await axios.post("http://localhost:5000/api/ride/", formData);
       if (response.data.success) {
         setFormData(emptyData);
         toast.success("Ride published Successfully!");
@@ -238,7 +249,13 @@ function HomepageHero({ rides, setRides }) {
         setRides([]);
       }
     }
+  
+    // Scroll to the rides section
+    if (ridesSectionRef.current) {
+      ridesSectionRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   };
+  
 
   const handlePlaceChanged = useCallback(
     (type) => {
@@ -344,8 +361,10 @@ function HomepageHero({ rides, setRides }) {
               className="w-full bg-gray-100 py-1 px-2 leading-tight focus:outline-none placeholder:text-black text-xl cursor-pointer"
               type="date"
               placeholder="Date you're travelling on"
+              min={todayDate} // Prevent selection of past dates
             />
           </div>
+
 
           {/* Passengers Field */}
           <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full">
@@ -440,36 +459,50 @@ function HomepageHero({ rides, setRides }) {
       <div className="text-black font-extrabold mt-4 text-center my-10 ">
         Distance: {distance} km
       </div>
+      <div ref={ridesSectionRef} className="relative z-50 w-full">
+      
       {role !== "Driver" && (
   rides?.length === 0 ? (
-    <div>No Rides Found</div>
-  ) : (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 bg-gray-200 p-10 rounded-lg" style={{ zIndex: 999 }} >
-      {rides?.map((value, index) => (
-        <div
-          key={index}
-          className="border p-6 rounded-lg shadow hover:shadow-lg transition bg-white"
-        >
-          <h3 className="font-semibold text-xl">
-            {value.extsource} to {value.extdestination}
-          </h3>
-          <p>Starting from {value.fare}</p>
-          <p>AvailableSeats : {value.availableSeats}</p>
-          {value.route.map((routeValue, routeIndex) => (
-  <span key={routeIndex}>
-    {routeValue},{routeIndex < value.route.length - 1 ? ', ' : ''}
-  </span>
-))}
-<br/>
+<div className="bg-gray-200 p-10 rounded-lg w-full" style={{ zIndex: 999 }}>
+  <h2 className="text-2xl font-bold mb-6 text-center">Sorry! No Rides are availble for this Route... :-(</h2>
+</div>
 
-          <button onClick={()=>handleBooking(value)} className="mt-4 px-4 py-2 bg-orange-500 text-white rounded">
-            Book Now
-          </button>
-        </div>
-      ))}
+  ) : (
+    <div className="bg-gray-200 p-10 rounded-lg" style={{ zIndex: 999 }}>
+      <h2 className="text-2xl font-bold mb-6 text-center">Rides Available for You</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {rides?.map((value, index) => (
+          <div
+            key={index}
+            className="border p-6 rounded-lg shadow hover:shadow-lg transition bg-white"
+          >
+            <h3 className="font-semibold text-xl">
+              {value.extsource} to {value.extdestination}
+            </h3>
+            <p>Fare/Passenger: ₹ {value.fare}</p>
+            <p>Available Seats: {value.availableSeats}</p>
+            {value.route && value.route.length > 0 ? (
+              value.route.map((routeValue, routeIndex) => (
+                <span key={routeIndex}>
+                  {routeValue}
+                  {routeIndex < value.route.length - 1 ? ", " : ""}
+                </span>
+              ))
+            ) : (
+              <span>No route specified</span>
+            )}
+            <br />
+            <button onClick={() => handleBooking(value)} className="mt-4 px-4 py-2 bg-orange-500 text-white rounded">
+              Book Now
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   )
 )}
+
+</div>
 
       <ToastContainer/>
     </div>
