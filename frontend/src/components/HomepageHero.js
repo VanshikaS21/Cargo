@@ -19,46 +19,40 @@ import { ToastContainer, toast } from 'react-toastify';
 
 function HomepageHero({ rides, setRides }) {
   const driverId = getUserId();
-  // Add this code to dynamically get today's date in the required format
-const getTodayDate = () => {
+  const passengerId = getUserId();
+  const getTodayDate = () => {
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
   const day = String(today.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
-
-// Inside the HomepageHero component
-const todayDate = getTodayDate(); // Get today's date
-
   const emptyData = {
-    from: "",
-    to: "",
-    date: "",
-    fare: 0,
-    passengers: "",
-    distance: 0,
-    driverId: driverId,
-  }
+  from: "",
+  to: "",
+  date: "",
+  fare: 0,
+  passengers: "",
+  distance: 0,
+  driverId: driverId,
+}
+  const todayDate = getTodayDate();
   const [formData, setFormData] = useState(emptyData);
   const [ride,setRide] = useState({});
   const [formDataCopy,seFormDataCopy] = useState();
   const [distance, setDistance] = useState("");
   const role = getUserRole();
   const [isDataFetched,setIsDataFetched] = useState(false);
-
   const [directions, setDirections] = useState(null);
-  const [center, setCenter] = useState({ lat: 0, lng: 0 }); // State to hold map center
+  const [center, setCenter] = useState({ lat: 0, lng: 0 });
   const autocompleteFromRef = useRef(null);
   const autocompleteToRef = useRef(null);
   const dateInputRef = useRef(null);
-
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: "AIzaSyDVPppkMKTKJdKzadu1Pd3WunqeKz5eSdY", // Replace with your Google Maps API key
     libraries: ["places"],
   });
   const [inputValues, setInputValues] = useState([""]);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
         setFormData({
@@ -74,8 +68,6 @@ const todayDate = getTodayDate(); // Get today's date
   const addInput = () => {
     setInputValues([...inputValues, ""]);
   };
-
-  // Remove an input at a specific index
   const removeInput = (index) => {
     const newValues = inputValues.filter((_, i) => i !== index);
     setInputValues(newValues);
@@ -90,28 +82,21 @@ const todayDate = getTodayDate(); // Get today's date
       return () => {
         document.body.removeChild(script);
       };
-    }, []);
-    const handlePaymentSuccess = async()=>{
+  }, []);
+  const handlePaymentSuccess = async(selectedRide)=>{
         const response = await axios.get(
-          `http://localhost:5000/api/ride/book?userId=${driverId}&rideId=${ride._id}&source=${formDataCopy.from}&destination=${formDataCopy.to}&passengers=${formDataCopy.passengers}`
+          `http://localhost:5000/api/ride/book?userId=${driverId}&rideId=${selectedRide._id}&source=${formDataCopy.from}&destination=${formDataCopy.to}&passengers=${formDataCopy.passengers}`
         );
-        console.log()
         if (response.data.success) {
           setRides(response.data.data);
+          window.location.reload();
         }
-    }
+  }
+  const handlePayment = (selectedRide) => {
 
-    const handleKeyPress = (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault(); // Prevent default behavior (form submission or focus change)
-        // Do nothing
-      }
-    };
-    
-    const handlePayment = () => {
-      console.log(ride.fare);
+      console.log(selectedRide.fare);
       console.log(formDataCopy.passengers);
-      const payment_amount = Number(ride.fare) * Number(formDataCopy.passengers) *100;
+      const payment_amount = Number(selectedRide.fare) * Number(formDataCopy.passengers) *100;
       console.log(payment_amount);
       const options = {
         key: "rzp_test_YJBXNlTk3aEt8i",  // Replace with your Razorpay Test Key ID
@@ -121,7 +106,7 @@ const todayDate = getTodayDate(); // Get today's date
         description: "Test Payment",
         image: 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png',
         handler: function (response) {
-          handlePaymentSuccess();
+          handlePaymentSuccess(selectedRide);
         },
         notes: {
           address: "Hello World"
@@ -133,11 +118,12 @@ const todayDate = getTodayDate(); // Get today's date
   
       const paymentObject = new window.Razorpay(options);
       paymentObject.open();
-    };
-    const  handleBooking = (rideData)=>{
-      setRide(rideData);
-      handlePayment();
-    }
+  };
+  const handleBooking = (value)=>{
+      console.log(value);
+      setRide({...value});
+      handlePayment(value);
+  }
   const calculateRoute = async () => {
     // Calculate directions after submitting the form
     if (autocompleteFromRef.current && autocompleteToRef.current) {
@@ -161,7 +147,6 @@ const todayDate = getTodayDate(); // Get today's date
       }
     }
   };
-
   const getRoute = (fromLocation, toLocation) => {
     const directionsService = new window.google.maps.DirectionsService();
     directionsService.route(
@@ -175,18 +160,44 @@ const todayDate = getTodayDate(); // Get today's date
           setDirections(result);
           const route = result.routes[0];
           const km = route.legs[0].distance.value / 1000; // Convert meters to kilometers
-          setDistance(km.toFixed(2)); // Store distance in km
-  
-          // Show success toast
           toast.success(`Distance Calculated: ${km.toFixed(2)} km`);
+          setDistance(km.toFixed(2)); // Store distance in km
         } else {
           console.error("Error fetching directions:", result);
-          // Show error toast
           toast.error("Unable to calculate distance. Please try again.");
         }
       }
     );
   };
+  const [bookedRides, setBookedRides] = useState([]);
+
+  useEffect(() => {
+    const fetchBookedRides = async () => {
+      const userId = getUserId(); 
+      if (!userId) {
+        toast.error("User ID is missing.");
+        return;  // Exit if userId is not available
+      }
+  
+      try {
+        const response = await axios.post(`http://localhost:5000/api/ride/getPassengerRides`, {
+          userId: userId,
+        });
+  
+        if (response.data.success) {
+          console.log(response.data);
+          setBookedRides(response.data.data.rides);
+        } else {
+          toast.error("Failed to fetch booked rides");
+        }
+      } catch (error) {
+        console.error("Error fetching booked rides:", error);
+        toast.error("An error occurred while fetching booked rides.");
+      }
+    };
+  
+    fetchBookedRides();
+  }, [driverId]);  // The effect will run again if `driverId` changes
   
   useEffect(() => {
     setFormData((prevFormData) => ({
@@ -200,29 +211,29 @@ const todayDate = getTodayDate(); // Get today's date
       routes: inputValues,
     }));
   }, [inputValues]);
-
+  useEffect(() => {
+    console.log(ride,"useeffect")
+  }, [ride]);
   const getDriverRides = async () => {
     const response = await axios.get(
       `http://localhost:5000/api/ride?driverId=${
-        role == "Driver" ? driverId : null
+        role === "Driver" ? driverId : null
       }`
     );
     if (response.data.success) {
       setRides(response.data.data);
     }
   }
-  if(!isDataFetched){
-    if(role == "Driver"){
+  useEffect(() => {
+    if (role === "Driver" && !isDataFetched) {
       getDriverRides();
+      setIsDataFetched(true);
     }
-    setIsDataFetched(true);
-  }
+  }, [role, isDataFetched]);
   
-  const ridesSectionRef = useRef(null);
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-
+    
     // Check if all required fields are filled
     if (!formData.from || !formData.to || !formData.date || !formData.passengers) {
       toast.error("Please fill out all fields before submitting.");
@@ -230,7 +241,10 @@ const todayDate = getTodayDate(); // Get today's date
     }
   
     if (role === "Driver") {
-      const response = await axios.post("http://localhost:5000/api/ride/", formData);
+      const response = await axios.post(
+        "http://localhost:5000/api/ride/",
+        formData
+      );
       if (response.data.success) {
         setFormData(emptyData);
         toast.success("Ride published Successfully!");
@@ -244,19 +258,14 @@ const todayDate = getTodayDate(); // Get today's date
         `http://localhost:5000/api/ride?to=${formData.to}&from=${formData.from}&passengers=${formData.passengers}&date=${formData.date}`
       );
       if (response.data.success) {
+        console.log(response.data,"success")
         setRides(response.data.data);
       } else {
+        console.log(response.data,"fail")
         setRides([]);
       }
     }
-  
-    // Scroll to the rides section
-    if (ridesSectionRef.current) {
-      ridesSectionRef.current.scrollIntoView({ behavior: "smooth" });
-    }
   };
-  
-
   const handlePlaceChanged = useCallback(
     (type) => {
       if (type === "from" && autocompleteFromRef.current) {
@@ -276,10 +285,41 @@ const todayDate = getTodayDate(); // Get today's date
     },
     [formData]
   );
+  const cancelBooking = async (rideId, passengerId, passengersCount) => {
+    // Show a confirmation dialog to the user
+    const confirmCancel = window.confirm("Are you sure you want to cancel the booking?");
+    
+    // If user clicks "OK" (true), proceed with the cancellation
+    if (confirmCancel) {
+      try {
+        const response = await axios.post("http://localhost:5000/api/ride/cancelPassengerRide", {
+          rideId,
+          passengerId,
+          passengersCount,
+        });
+    
+        if (response.data.success) {
+          alert("Booking cancelled successfully!");
+          // Optionally, refresh the rides list to reflect the changes
+          window.location.reload();
+        } else {
+          alert(`Failed to cancel booking: ${response.data.message}`);
+        }
+      } catch (error) {
+        console.error("Error cancelling booking:", error);
+        alert("An error occurred while cancelling the booking.");
+      }
+    } else {
+      // If user clicks "Cancel", do nothing
+      alert("Booking cancellation was aborted.");
+    }
+  };
+  
 
   if (!isLoaded) {
     return <div>Loading...</div>;
   }
+
 
   return (
     <div
@@ -336,7 +376,7 @@ const todayDate = getTodayDate(); // Get today's date
             </Autocomplete>
           </div>
 
-          {role == "Driver" ? (
+          {role === "Driver" ? (
             <div className="flex justify-center">
               <button
                 className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
@@ -361,10 +401,9 @@ const todayDate = getTodayDate(); // Get today's date
               className="w-full bg-gray-100 py-1 px-2 leading-tight focus:outline-none placeholder:text-black text-xl cursor-pointer"
               type="date"
               placeholder="Date you're travelling on"
-              min={todayDate} // Prevent selection of past dates
+              min={todayDate}
             />
           </div>
-
 
           {/* Passengers Field */}
           <div className="w-full bg-gray-100 py-3 px-8 flex items-center rounded-full">
@@ -403,7 +442,7 @@ const todayDate = getTodayDate(); // Get today's date
                       type="text"
                       value={value}
                       onChange={(e) => handleInputChange(e, index)}
-                      placeholder={`Route ${index + 1}`}
+                      placeholder={`Station ${index + 1}`}
                       style={{ marginRight: "5px" }}
                     />
                     <button
@@ -422,7 +461,7 @@ const todayDate = getTodayDate(); // Get today's date
                   className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
                   onClick={() => addInput()}
                 >
-                  Add
+                  Add Station
                 </button>
               </div>
             </>
@@ -434,7 +473,7 @@ const todayDate = getTodayDate(); // Get today's date
               type="submit"
               className="bg-primaryOrange-light hover:bg-primaryOrange-light text-white font-semibold py-2 px-4 rounded"
             >
-              {role == "Driver" ? "Publish Ride" : "Search"}
+              {role === "Driver" ? "Publish Ride" : "Search"}
             </button>
           </div>
         </form>
@@ -459,30 +498,38 @@ const todayDate = getTodayDate(); // Get today's date
       <div className="text-black font-extrabold mt-4 text-center my-10 ">
         Distance: {distance} km
       </div>
-      <div ref={ridesSectionRef} className="relative z-50 w-full">
-      
-      {role !== "Driver" && (
-  rides?.length === 0 ? (
-<div className="bg-gray-200 p-10 rounded-lg w-full" style={{ zIndex: 999 }}>
-  <h2 className="text-2xl font-bold mb-6 text-center">Sorry! No Rides are availble for this Route... :-(</h2>
-</div>
 
-  ) : (
-    <div className="bg-gray-200 p-10 rounded-lg" style={{ zIndex: 999 }}>
-      <h2 className="text-2xl font-bold mb-6 text-center">Rides Available for You</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {rides?.map((value, index) => (
-          <div
-            key={index}
-            className="border p-6 rounded-lg shadow hover:shadow-lg transition bg-white"
-          >
-            <h3 className="font-semibold text-xl">
-              {value.extsource} to {value.extdestination}
-            </h3>
-            <p>Fare/Passenger: ₹ {value.fare}</p>
-            <p>Available Seats: {value.availableSeats}</p>
-            {value.route && value.route.length > 0 ? (
-              value.route.map((routeValue, routeIndex) => (
+
+
+      {/* Ride Management Section */}
+      {role !== "Driver" && (
+      rides?.length === 0 ? (
+      <div className="bg-gray-200 p-10 rounded-lg w-full" style={{ zIndex: 999 }}>
+      <h2 className="text-2xl font-bold mb-6 text-center">
+        Sorry! No Rides are available for this Route... :-(
+      </h2>
+      </div>
+      ) : (
+      <div className="bg-gray-200 p-10 rounded-lg w-full" style={{ zIndex: 999 }}>
+    <div className="bg-gray-200 rounded-lg w-full" style={{ zIndex: 999 }}>
+    <h2 className="text-2xl font-bold text-center w-full">
+        Rides available for this route...
+      </h2>
+  </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 bg-gray-200 p-10 rounded-lg" style={{ zIndex: 999 }}>
+
+      {rides?.map((value, index) => (
+        <div
+          key={index}
+          className="border p-6 rounded-lg shadow hover:shadow-lg transition bg-white"
+        >
+          <h3 className="font-semibold text-xl">
+            {value.extsource} to {value.extdestination}
+          </h3>
+          <p>Fare/Passenger: ₹ {value.fare}</p>
+          <p>Available Seats: {value.availableSeats}</p>
+                {value.route && value.route.length > 0 ? (
+                value.route.map((routeValue, routeIndex) => (
                 <span key={routeIndex}>
                   {routeValue}
                   {routeIndex < value.route.length - 1 ? ", " : ""}
@@ -492,22 +539,81 @@ const todayDate = getTodayDate(); // Get today's date
               <span>No route specified</span>
             )}
             <br />
-            <button onClick={() => handleBooking(value)} className="mt-4 px-4 py-2 bg-orange-500 text-white rounded">
-              Book Now
+          <button onClick={() => handleBooking(value)} className="mt-4 px-4 py-2 bg-orange-500 text-white rounded">
+            Book Now
+          </button>
+        </div>
+      ))}
+    </div>
+      </div>
+
+
+  )
+)}
+
+
+{/* Passenger-exclusive Section */}
+
+{role !== "Driver" && (
+  <div className="w-full bg-yellow-100 rounded-lg p-8 shadow-lg" style={{ zIndex: 999 }}>
+    <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
+      Your Booked Rides
+    </h2>
+    {bookedRides.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {bookedRides.map((ride, index) => (
+          <div
+            key={index}
+            className="bg-white border border-gray-300 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-200"
+          >
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              {ride.extsource} to {ride.extdestination}
+            </h3>
+            <div className="flex flex-col gap-2 text-gray-600">
+              <p>
+                <span className="font-semibold">Fare:</span> ₹{ride.fare}
+              </p>
+              <p>
+                <span className="font-semibold">Available Seats:</span>{" "}
+                {ride.availableSeats}
+              </p>
+              <p>
+                <span className="font-semibold">Booked Seats:</span>{" "}
+                {ride.bookedSeats}
+              </p>
+              <p>
+                <span className="font-semibold">Date:</span>{" "}
+                {new Intl.DateTimeFormat("en-IN", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                }).format(new Date(ride.date))}
+              </p>
+            </div>
+            <button
+              onClick={() =>
+                cancelBooking(ride._id, passengerId, ride.bookedSeats)
+              }
+              className="mt-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors duration-200"
+            >
+              Cancel Booking
             </button>
           </div>
         ))}
       </div>
-    </div>
-  )
+    ) : (
+      <div className="text-center text-gray-700 text-lg mt-4">
+        You haven’t booked any rides yet!
+      </div>
+    )}
+  </div>
 )}
 
-</div>
+
 
       <ToastContainer/>
     </div>
 
   );
 }
-
 export default HomepageHero;

@@ -62,14 +62,7 @@ const SuperUser = () => {
   };
 
 
-  const handleSearch = () => {
-    // Dummy results
-    setResults([
-      { type: 'User', id: 'USR001', name: 'John Doe' },
-      { type: 'Vehicle', id: 'VEH001', regNo: 'AB1234CD' },
-      { type: 'Ride', id: 'RID001', driver: 'Jane Smith' },
-    ]);
-  };
+
 
   const handleApprove = async (id, status) => {
     const token = localStorage.getItem('authToken');

@@ -1,6 +1,5 @@
-
-import Ride from "../models/rideSchema.js"; // Import the Ride model
-import User from "../models/userSchema.js"; // Import the Ride model
+import Ride from "../models/rideSchema.js";
+import User from "../models/userSchema.js";
 
 async function getAllRides(req) {
   try {
@@ -30,7 +29,6 @@ async function getAllRides(req) {
     return [];
   }
 }
-
 
 async function getRides(req) {
   try {
@@ -78,7 +76,6 @@ async function getRides(req) {
   }
 }
 
-
 async function createRide(request) {
   try {
     const newRide = new Ride({
@@ -120,7 +117,8 @@ async function cancelRide(req) {
     return rides;
   }
 }
-  async function bookRide(req, res) {
+
+async function bookRide(req, res) {
     try {
       // Step 1: Fetch user details using userId (if needed, for reference or validation)
       const user = await User.findById(req.query.userId).select(['_id', 'name']);
@@ -142,7 +140,10 @@ async function cancelRide(req) {
         req.query.rideId,
         {
           $push: { passengers: passengerData }, // Pushing the new passenger data into the 'passengers' array
-          $inc: { availableSeats: -req.query.passengers },
+
+          $inc: { bookedSeats: +req.query.passengers,
+            availableSeats: -req.query.passengers 
+           },
         },
         {
           new: true, // Return the updated document
@@ -162,5 +163,75 @@ async function cancelRide(req) {
     }
   
 }
-// Call the function to create the ride
-export { createRide, getRides, cancelRide,bookRide,getAllRides };
+
+async function getRidesForPassenger(request) {
+  console.log(request.data,"request");
+  const userId =  request.body.userId
+  console.log(userId)
+  try {
+    const user = await User.findById(userId);
+    if (!user || user.role !== "Passenger") {
+      return { success: false, message: "User must have the role of Passenger." };
+    }
+
+    // Find all rides where the user is listed as a passenger
+    const rides = await Ride.find({
+      "passengers.passengerId": userId,
+    });
+
+    if (!rides || rides.length === 0) {
+      return { success: true, message: "No rides found for this passenger.", rides: [] };
+    }
+
+    return { success: true, rides };
+  } catch (error) {
+    console.error("Error fetching rides for passenger:", error);
+    return { success: false, message: "Error fetching rides for passenger.", error };
+  }
+}
+
+async function cancelPassengerBooking(req) {
+  try {
+    const { rideId, passengerId, passengersCount } = req.body;
+
+    const ride = await Ride.findById(rideId);
+    if (!ride) {
+      return { success: false, message: "Ride not found." };
+    }
+
+    const passengerIndex = ride.passengers.findIndex(
+      (p) => p.passengerId.toString() === passengerId
+    );
+
+    if (passengerIndex === -1) {
+      return { success: false, message: "Passenger not found in the ride." };
+    }
+
+    // Remove the passenger from the ride
+    ride.passengers.splice(passengerIndex, 1);
+
+    // Update the bookedSeats and availableSeats accordingly
+    ride.bookedSeats -= Number(passengersCount);
+    ride.availableSeats += Number(passengersCount);
+
+    // Save the updated ride
+    await ride.save();
+
+    return { success: true, message: "Passenger booking cancelled successfully." };
+  } catch (error) {
+    console.error("Error canceling passenger booking:", error);
+    return { success: false, message: "Error canceling passenger booking.", error };
+  }
+}
+
+
+
+export { 
+  createRide, 
+  getRides, 
+  cancelRide, 
+  bookRide, 
+  getAllRides, 
+  getRidesForPassenger, 
+  cancelPassengerBooking 
+};

@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useActionData } from 'react-router-dom'; // Assuming you're using react-router for navigation.
-import Logo from '../components/UI/logo';
 import axios from 'axios';
 import { getUserId } from '../utils/AuthFunctions';
 import { ToastContainer, toast } from 'react-toastify';
@@ -29,7 +28,7 @@ const Profile = () => {
   });
   const Navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const dropdownRef = useRef(null); // Create a ref for the dropdown menu
+  const dropdownRef = useRef(null); 
   const [role, setRole] = useState('')
   const fetchData = async () => {
     try {
@@ -63,10 +62,9 @@ const Profile = () => {
   };
 
   const handleFileUpload = (base64Data, fieldName) => {
-    // Set the formData with Base64 encoded data for the specific certificate
     setFormData((prev) => ({
       ...prev,
-      [fieldName]: base64Data, // Use the base64 data from the file
+      [fieldName]: base64Data,
     }));
   };
 
@@ -110,7 +108,6 @@ const Profile = () => {
     setMenuOpen((prev) => !prev);
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -151,7 +148,8 @@ const Profile = () => {
   };
 
   return (
-    <>
+    <>      
+
       <Navbar />
       <div className="min-h-screen bg-gray-50">
         {/* Profile Section */}
@@ -231,7 +229,6 @@ const Profile = () => {
                       onChange={handleChange}
                     />
                   </div>
-
 
 
                   {/* Name */}
